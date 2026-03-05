@@ -14,7 +14,7 @@ export const PageHeader = ({ title, description, onAction, ActionIcon, actionTex
     return (
         <div className='flex items-center justify-between mb-8'>
             <div className=''>
-                <h1 className='font-semibold text-[36px] text-gray-900 dark:text-white mb-1'>{title}</h1>
+                <h1 className='font-semibold text-[36px] text-gray-900 dark:text-white mb-0'>{title}</h1>
                 {description && <p className='font-normal text-[16px] text-gray-500 dark:text-gray-400'>{description}</p>}
             </div>
             {onAction &&

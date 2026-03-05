@@ -7,6 +7,10 @@ const Logout = lazy(() => import('@/pages/general/logout'));
 
 const Project = lazy(() => import('@/pages/user/project/project'));
 const CreateProject = lazy(() => import('@/pages/user/project/create-project'));
+const ProjectDetail = lazy(() => import('@/pages/user/project/project-details'));
+const Properties = lazy(() => import('@/pages/user/properties/properties'));
+const CreateProperty = lazy(() => import('@/pages/user/properties/create-property'));
+const UpdateProperty = lazy(() => import('@/pages/user/properties/update-property'));
 
 export const userRoutes: RouteObject[] = [
   {
@@ -23,6 +27,22 @@ export const userRoutes: RouteObject[] = [
       {
         path: '/projects/create',
         element: <CreateProject />,
+      },
+      {
+        path: '/projects/:id',
+        element: <ProjectDetail />,
+      },
+      {
+        path: '/properties',
+        element: <Properties />,
+      },
+      {
+        path: '/properties/create',
+        element: <CreateProperty />,
+      },
+      {
+        path: '/properties/update/:id',
+        element: <UpdateProperty />,
       },
     ],
   },

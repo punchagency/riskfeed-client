@@ -14,6 +14,8 @@ import { useNavigate } from 'react-router-dom';
 import type { CreateProjectDto } from '@/interfaces/project/dto/create-project.dto';
 import { OWNERSHIP_TYPES, PROPERTY_TYPES } from '@/interfaces/user/user.interface';
 import { useReduxAuth } from '@/hooks/use-auth';
+import { PageHeader } from '@/components/page-header';
+import { PageBackButton } from '@/components/page-back-button';
 
 const projectSchema = z.object({
     title: z.string().min(1, 'Project title is required'),
@@ -148,13 +150,30 @@ const CreateProject = () => {
         }
 
         if (propertyImages.length > 0 || propertyDocuments.length > 0) {
-            const formData: FormData = new FormData();
-            formData.append('data', JSON.stringify(payload));
-            
+            const formData = new FormData();
+            formData.append('title', payload.title);
+            formData.append('description', payload.description);
+            formData.append('property.type', payload.property.type);
+            if (payload.property.name) formData.append('property.name', payload.property.name);
+            formData.append('property.address.street', payload.property.address.street);
+            formData.append('property.address.city', payload.property.address.city);
+            formData.append('property.address.state', payload.property.address.state);
+            formData.append('property.address.zipcode', payload.property.address.zipcode);
+            formData.append('property.address.country', payload.property.address.country);
+            if (payload.property.ownershipType) formData.append('property.ownershipType', payload.property.ownershipType);
+            if (payload.property.sizeSqFt) formData.append('property.sizeSqFt', payload.property.sizeSqFt.toString());
+            if (payload.property.ownerName) formData.append('property.ownerName', payload.property.ownerName);
+            formData.append('minBudget', payload.minBudget.toString());
+            formData.append('maxBudget', payload.maxBudget.toString());
+            if (payload.startDate) formData.append('startDate', payload.startDate);
+            if (payload.durationDays) formData.append('durationDays', payload.durationDays.toString());
+            if (payload.durationRange) {
+                formData.append('durationRange.minDays', payload.durationRange.minDays.toString());
+                formData.append('durationRange.maxDays', payload.durationRange.maxDays.toString());
+            }
             propertyImages.forEach(image => {
                 formData.append('propertyImages', image);
             });
-            
             propertyDocuments.forEach(doc => {
                 formData.append('propertyDocuments', doc);
             });
@@ -175,10 +194,14 @@ const CreateProject = () => {
 
     return (
         <>
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold mb-2">Create New Project</h1>
-                <p>Let's get your construction project started</p>
-            </div>
+            <PageBackButton
+                text='Back to Projects'
+                onClick={() => navigate('/projects')}
+            />
+            <PageHeader
+                title="Create New Project"
+                description="Let's get your construction project started"
+            />
 
             <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-4">

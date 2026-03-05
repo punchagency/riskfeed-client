@@ -40,11 +40,11 @@ const ConfirmDelete: React.FC<ConfirmDeleteProps> = ({
                     <AlertDialogDescription>{description}</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel disabled={isLoading} className="hover:bg-primary/90 hover:text-white">Cancel</AlertDialogCancel>
+                    <AlertDialogCancel disabled={isLoading} className="hover:bg-muted">Cancel</AlertDialogCancel>
                     <AlertDialogAction
                         onClick={handleConfirm}
                         disabled={isLoading}
-                        className="bg-destructive text-white hover:bg-destructive/90"
+                        className="bg-destructive text-white hover:bg-destructive/70"
                     >
                         {isLoading ? 'Deleting...' : 'Delete'}
                     </AlertDialogAction>

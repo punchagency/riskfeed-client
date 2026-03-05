@@ -20,6 +20,7 @@ import {
   TrendingUp,
   Award,
   MessageSquare,
+  House,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main";
@@ -60,6 +61,7 @@ const getRoleBasedMenuItems = (role: string) => {
     ],
     user: [
       { title: "Dashboard", url: "", icon: LayoutDashboard },
+      { title: "Properties", url: "/properties", icon: House },
       { title: "Projects", url: "/projects", icon: FolderKanban },
       { title: "Contractors", url: "/contractors", icon: Users },
       { title: "Risk Monitor", url: "/risk-monitor", icon: Shield },

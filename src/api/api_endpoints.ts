@@ -21,6 +21,14 @@ const API_ENDPOINTS = {
         getProjects: '/api/v1/projects',
         getProjectById: '/api/v1/projects/:id',
         updateProject: '/api/v1/projects/:id',
+    },
+    properties: {
+        createProperties: '/api/v1/properties',
+        updateProperties: '/api/v1/properties/:id',
+        getProperties: '/api/v1/properties',
+        deleteProperties: '/api/v1/properties/:id',
+        getPropertyById: '/api/v1/properties/:id',
+        getPropertiesAnalytics: '/api/v1/properties/analytics'
     }
 };
 

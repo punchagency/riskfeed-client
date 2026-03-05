@@ -67,11 +67,11 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({ property, onClick, o
                             )}
                             {/* Badges */}
                             <div className="absolute top-4 px-3 w-full flex justify-between items-center gap-2">
-                                <span className="px-3 py-1 rounded-md text-xs font-medium bg-card/90 text-primary-foreground backdrop-blur-sm border border-border">
+                                <span className="px-3 py-1 rounded-md text-xs font-medium bg-card/90 text-foreground backdrop-blur-sm border border-border">
                                     {getPropertyTypeLabel(property.propertyType)}
                                 </span>
                                 {activeProject && activeProject?.length > 0 && (
-                                    <span className="px-3 py-1 rounded-md text-xs font-medium bg-primary text-primary-foreground backdrop-blur-sm">
+                                    <span className="px-3 py-1 rounded-md text-xs font-medium bg-primary text-foreground backdrop-blur-sm">
                                         {activeProject?.length} Active Project
                                     </span>
                                 )}
@@ -85,11 +85,11 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({ property, onClick, o
                             </div>
                             {/* Badges for no image state */}
                             <div className="absolute top-4 px-3 w-full flex justify-between items-center gap-2">
-                                <span className="px-3 py-1 rounded-md text-xs font-medium bg-card text-primary-foreground backdrop-blur-sm border border-border">
+                                <span className="px-3 py-1 rounded-md text-xs font-medium bg-card text-foreground backdrop-blur-sm border border-border">
                                     {getPropertyTypeLabel(property.propertyType)}
                                 </span>
                                 {activeProject && activeProject?.length > 0 && (
-                                    <span className="px-3 py-1 rounded-md text-xs font-medium bg-primary text-primary-foreground backdrop-blur-sm">
+                                    <span className="px-3 py-1 rounded-md text-xs font-medium bg-primary text-foreground backdrop-blur-sm">
                                         {activeProject?.length} Active Project
                                     </span>
                                 )}
@@ -104,8 +104,8 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({ property, onClick, o
                     {/* Header */}
                     <div className="flex items-start justify-between mb-6">
                         <div>
-                            <h3 className="text-2xl font-semibold text-primary-foreground mb-2">{property.name}</h3>
-                            <div className="flex items-center gap-1.5 text-primary-foreground mb-1">
+                            <h3 className="text-2xl font-semibold text-foreground mb-2">{property.name}</h3>
+                            <div className="flex items-center gap-1.5 text-foreground mb-1">
                                 <MapPin className="size-4" />
                                 <span className="text-sm">{property.address.street}</span>
                             </div>
@@ -154,7 +154,7 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({ property, onClick, o
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                         <div>
                             <p className="text-xs text-muted-foreground mb-1">Est. Value</p>
-                            <p className="font-medium text-primary-foreground">
+                            <p className="font-medium text-foreground">
                                 {formatCurrency(property.currentEstimatedValue || property.estimatedValue)}
                             </p>
                             {valueChange && (
@@ -168,12 +168,12 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({ property, onClick, o
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-1">Purchase Price</p>
-                            <p className="font-medium text-primary-foreground">{formatCurrency(property.purchasePrice)}</p>
+                            <p className="font-medium text-foreground">{formatCurrency(property.purchasePrice)}</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{formatDate(property.purchaseDate)}</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-1">Size</p>
-                            <p className="font-medium text-primary-foreground">
+                            <p className="font-medium text-foreground">
                                 {property.squareFeet?.toLocaleString() || 'N/A'} sq ft
                             </p>
                             <p className="text-xs text-muted-foreground mt-0.5">
@@ -182,7 +182,7 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({ property, onClick, o
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-1">Projects</p>
-                            <p className="font-medium text-primary-foreground">{property.projects?.length || 0} Total</p>
+                            <p className="font-medium text-foreground">{property.projects?.length || 0} Total</p>
                             <p className="text-xs text-muted-foreground mt-0.5">{activeProject?.length || 0} active</p>
                         </div>
                     </div>
@@ -193,25 +193,25 @@ export const PropertyItem: React.FC<PropertyItemProps> = ({ property, onClick, o
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-6 pb-6">
                         <div>
                             <p className="text-xs text-muted-foreground mb-1">Year Built</p>
-                            <p className="text-base font-medium text-primary-foreground">{property.yearBuilt || 'N/A'}</p>
+                            <p className="text-base font-medium text-foreground">{property.yearBuilt || 'N/A'}</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-1">Property Tax</p>
-                            <p className="text-base font-medium text-primary-foreground">{formatCurrency(property.annualPropertyTax)}/year</p>
+                            <p className="text-base font-medium text-foreground">{formatCurrency(property.annualPropertyTax)}/year</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-1">Insurance</p>
-                            <p className="text-base font-medium text-primary-foreground">{formatCurrency(property.annualInsurance)}/year</p>
+                            <p className="text-base font-medium text-foreground">{formatCurrency(property.annualInsurance)}/year</p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground mb-1">Maintenance</p>
-                            <p className="text-base font-medium text-primary-foreground">{formatCurrency(property.annualMaintenanceCosts)}/year</p>
+                            <p className="text-base font-medium text-foreground">{formatCurrency(property.annualMaintenanceCosts)}/year</p>
                         </div>
                         <div className="">
                             <p className="text-xs text-muted-foreground mb-1">Documents</p>
                             <div className='flex gap-2'>
                                 <FileChartColumn className='size4' />
-                                <p className="text-base font-medium text-primary-foreground">{validImages.length}</p>
+                                <p className="text-base font-medium text-foreground">{validImages.length}</p>
                             </div>
                         </div>
                     </div>

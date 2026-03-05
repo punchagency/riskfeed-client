@@ -13,6 +13,7 @@ import Logo from '@/assets/images/logo.png';
 import type { RegisterUserDto } from '@/interfaces/user/dto/register-user.dto';
 import { CONTRACTOR_SERVICES, TEAM_SIZE_BUCKETS } from '@/interfaces/user/user.interface';
 import { cn } from '@/lib/utils';
+import { useNavigate } from 'react-router-dom';
 
 const contractorSchema = z.object({
     // Step 1: Personal Information
@@ -55,6 +56,7 @@ const contractorSchema = z.object({
 type ContractorFormData = z.infer<typeof contractorSchema>;
 
 const ContractorSignup = () => {
+    const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -113,6 +115,7 @@ const ContractorSignup = () => {
             }
         };
         registerUser.mutate(payload);
+        navigate("/signin")
     };
 
     const nextStep = async () => {
@@ -165,15 +168,15 @@ const ContractorSignup = () => {
                                     {/* Connector Line */}
                                     {idx < steps.length - 1 && (
                                         <div className={cn(
-                                            "hidden md:block absolute top-6 left-[50%] right-[-50%] h-[2px] -translate-y-1/2 z-0",
-                                            step > s.id ? "bg-green-500" : "bg-slate-200"
+                                            "hidden md:block absolute top-6 left-[50%] right-[-50%] h-[2px] -translate-y-1/2 z-0 bg-secondary",
+                                            // step > s.id ? "bg-secondary" : "bg-slate-200"
                                         )} />
                                     )}
                                     
                                     <div className={cn(
                                         "w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-300 shadow-sm bg-white relative z-10",
                                         isActive ? "bg-primary border-primary text-white scale-110" : 
-                                        isCompleted ? "bg-green-500 border-green-500 text-white" : 
+                                        isCompleted ? "bg-primary border-primary text-white" : 
                                         "text-slate-400 border-slate-200"
                                     )}>
                                         {isCompleted ? <FaCheck /> : <Icon className="text-lg" />}
@@ -181,7 +184,7 @@ const ContractorSignup = () => {
                                     <div className="mt-3 text-center relative z-10">
                                         <p className={cn(
                                             "text-sm font-semibold",
-                                            isActive ? "text-primary" : isCompleted ? "text-green-600" : "text-slate-400"
+                                            isActive ? "text-primary" : isCompleted ? "text-foreground" : "text-slate-400"
                                         )}>{s.title}</p>
                                         <p className="text-xs text-slate-400 hidden md:block">{s.description}</p>
                                     </div>

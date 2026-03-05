@@ -75,7 +75,7 @@ export const PropertiesAnalytics: React.FC<PropertiesAnalyticsProps> = ({ data, 
                     <TrendingUp className="size-4" />
                     <span className="text-sm font-medium">Portfolio Value</span>
                 </div>
-                <p className="text-xl font-semibold text-primary-foreground mb-1">
+                <p className="text-xl font-semibold text-foreground mb-1">
                     {formatCurrency(portfolioValue.total)}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -89,7 +89,7 @@ export const PropertiesAnalytics: React.FC<PropertiesAnalyticsProps> = ({ data, 
                     <Building2 className="size-4" />
                     <span className="text-sm font-medium">Properties</span>
                 </div>
-                <p className="text-xl font-semibold text-primary-foreground mb-1">
+                <p className="text-xl font-semibold text-foreground mb-1">
                     {propertySummary.totalProperties}
                 </p>
                 <p className="text-xs text-muted-foreground">
@@ -106,8 +106,8 @@ export const PropertiesAnalytics: React.FC<PropertiesAnalyticsProps> = ({ data, 
                 <div className="space-y-2">
                     {distributionByType.slice(0, 2).map((dist, index) => (
                         <div key={index} className="flex items-center justify-between">
-                            <span className="text-sm text-primary-foreground">{getPropertyTypeLabel(dist.type)}</span>
-                            <span className="text-sm font-semibold text-primary-foreground">{dist.count}</span>
+                            <span className="text-sm text-foreground">{getPropertyTypeLabel(dist.type)}</span>
+                            <span className="text-sm font-semibold text-foreground">{dist.count}</span>
                         </div>
                     ))}
                 </div>
@@ -119,7 +119,7 @@ export const PropertiesAnalytics: React.FC<PropertiesAnalyticsProps> = ({ data, 
                     <DollarSign className="size-4" />
                     <span className="text-sm font-medium">Total Equity</span>
                 </div>
-                <p className="text-xl font-semibold text-primary-foreground mb-1">
+                <p className="text-xl font-semibold text-foreground mb-1">
                     {formatCurrency(financialHealth.totalEquity)}
                 </p>
                 <p className="text-xs text-muted-foreground">

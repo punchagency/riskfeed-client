@@ -75,7 +75,7 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ project, onClick, user
         >
             <div className="flex items-start justify-between mb-4">
                 <div className="flex-1">
-                    <h3 className="text-xl text-primary-foreground font-semibold mb-1 group-hover:text-primary transition-colors">
+                    <h3 className="text-xl text-foreground font-semibold mb-1 group-hover:text-primary transition-colors">
                         {project.title}
                     </h3>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -114,14 +114,14 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ project, onClick, user
                     <DollarSign className="size-4 text-muted-foreground" />
                     <div>
                         <p className="text-xs text-muted-foreground">Budget</p>
-                        <p className="text-sm text-primary-foreground font-medium">{formatBudget(project.minBudget, project.maxBudget)}</p>
+                        <p className="text-sm text-foreground font-medium">{formatBudget(project.minBudget, project.maxBudget)}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-2">
                     <Calendar className="size-4 text-muted-foreground" />
                     <div>
                         <p className="text-xs text-muted-foreground">Timeline</p>
-                        <p className="text-sm text-primary-foreground font-medium">{formatTimeline()}</p>
+                        <p className="text-sm text-foreground font-medium">{formatTimeline()}</p>
                     </div>
                 </div>
             </div>

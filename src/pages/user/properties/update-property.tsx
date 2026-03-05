@@ -239,7 +239,7 @@ const UpdateProperty = () => {
                             1
                         </div>
                         <div>
-                            <p className="text-sm text-primary-foreground font-semibold">Basic Information</p>
+                            <p className="text-sm text-foreground font-semibold">Basic Information</p>
                             <p className="text-xs">Property name, type, and location</p>
                         </div>
                     </div>
@@ -253,7 +253,7 @@ const UpdateProperty = () => {
                             2
                         </div>
                         <div>
-                            <p className="text-sm text-primary-foreground font-semibold">Financial Details</p>
+                            <p className="text-sm text-foreground font-semibold">Financial Details</p>
                             <p className="text-xs">Purchase price, taxes, and expenses</p>
                         </div>
                     </div>
@@ -267,7 +267,7 @@ const UpdateProperty = () => {
                             3
                         </div>
                         <div>
-                            <p className="text-sm text-primary-foreground font-semibold">Property Details</p>
+                            <p className="text-sm text-foreground font-semibold">Property Details</p>
                             <p className="text-xs">Size, rooms, and features</p>
                         </div>
                     </div>
@@ -280,7 +280,7 @@ const UpdateProperty = () => {
                             4
                         </div>
                         <div>
-                            <p className="text-sm text-primary-foreground font-semibold">Photos & Review</p>
+                            <p className="text-sm text-foreground font-semibold">Photos & Review</p>
                             <p className="text-xs">Upload images and confirm details</p>
                         </div>
                     </div>
@@ -294,7 +294,7 @@ const UpdateProperty = () => {
                     {step === 1 && (
                         <div className="backdrop-blur-sm rounded-2xl p-8 border">
                             <div className="mb-6">
-                                <h2 className="text-2xl text-primary-foreground font-bold mb-2">Basic Information</h2>
+                                <h2 className="text-2xl text-foreground font-bold mb-2">Basic Information</h2>
                                 <p className="text-muted-foreground">Property name, type, and location</p>
                             </div>
 
@@ -454,7 +454,7 @@ const UpdateProperty = () => {
                     {step === 2 && (
                         <div className="backdrop-blur-sm rounded-2xl p-8 border">
                             <div className="mb-6">
-                                <h2 className="text-2xl text-primary-foreground font-bold mb-2">Financial Details</h2>
+                                <h2 className="text-2xl text-foreground font-bold mb-2">Financial Details</h2>
                                 <p className="text-muted-foreground">Purchase price, taxes, and expenses</p>
                             </div>
 
@@ -583,7 +583,7 @@ const UpdateProperty = () => {
                     {step === 3 && (
                         <div className="backdrop-blur-sm rounded-2xl p-8 border">
                             <div className="mb-6">
-                                <h2 className="text-2xl text-primary-foreground font-bold mb-2">Property Details</h2>
+                                <h2 className="text-2xl text-foreground font-bold mb-2">Property Details</h2>
                                 <p className="text-muted-foreground">Size, rooms, and features</p>
                             </div>
 
@@ -696,7 +696,7 @@ const UpdateProperty = () => {
                     {step === 4 && (
                         <div className="backdrop-blur-sm rounded-2xl p-8 border">
                             <div className="mb-6">
-                                <h2 className="text-2xl text-primary-foreground font-bold mb-2">Photos & Review</h2>
+                                <h2 className="text-2xl text-foreground font-bold mb-2">Photos & Review</h2>
                                 <p className="text-muted-foreground">Upload images and review your property details before submission</p>
                             </div>
 

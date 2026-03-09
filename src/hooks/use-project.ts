@@ -5,6 +5,7 @@ import APIErrorResponse from '@/utils/HandleAPIError';
 import type { PROJECT_RISK_LEVELS, PROJECT_STATUSES } from '@/interfaces/project/project.interface';
 import type { CreateProjectDto } from '@/interfaces/project/dto/create-project.dto';
 import type { UpdateProjectDto } from '@/interfaces/project/dto/update-project.dto';
+import type { InviteContractorDto } from '@/interfaces/project/dto/invite-contractor.dto';
 
 export const useCreateProject = () => {
     const queryClient = useQueryClient();
@@ -61,4 +62,19 @@ export const useSuggestContractors = (id: string) => {
         select: (responose) => responose.data,
         enabled: !!id 
     })
+}
+
+export const useInviteContractor = () => {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, data }: { id: string; data: InviteContractorDto }) => ProjectApi.inviteContractor(id, data),
+        onSuccess: (_, variables) => {
+            toast.success('Contractor invited successfully');
+            queryClient.invalidateQueries({ queryKey: ['suggested-contractors', variables.id] });
+        },
+        onError: (error) => {
+            APIErrorResponse(error);
+        },
+    });
 }

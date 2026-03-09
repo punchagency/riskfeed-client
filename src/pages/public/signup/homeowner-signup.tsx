@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useForm, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -55,6 +56,7 @@ const homeownerSchema = z.object({
 type HomeownerFormData = z.infer<typeof homeownerSchema>;
 
 const HomeownerSignup = () => {
+    const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -101,7 +103,11 @@ const HomeownerSignup = () => {
                 source: data.heardAboutSource
             } : undefined
         };
-        registerUser.mutate(payload);
+        registerUser.mutate(payload, {
+            onSuccess: () => {
+                navigate('/activate-account', { state: { email: data.email } });
+            }
+        });
     };
 
     const nextStep = async () => {

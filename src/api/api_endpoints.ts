@@ -21,7 +21,8 @@ const API_ENDPOINTS = {
         getProjects: '/api/v1/projects',
         getProjectById: '/api/v1/projects/:id',
         updateProject: '/api/v1/projects/:id',
-        suggestContractors: '/api/v1/projects/:id/suggest-contractors'
+        suggestContractors: '/api/v1/projects/:id/suggest-contractors',
+        inviteContractor: '/api/v1/projects/:id/invite-contractor',
     },
     properties: {
         createProperties: '/api/v1/properties',
@@ -30,6 +31,10 @@ const API_ENDPOINTS = {
         deleteProperties: '/api/v1/properties/:id',
         getPropertyById: '/api/v1/properties/:id',
         getPropertiesAnalytics: '/api/v1/properties/analytics'
+    },
+    contractor: {
+        getContractors: '/api/v1/contractor',
+        getContractorById: '/api/v1/contractor/:id',
     }
 };
 

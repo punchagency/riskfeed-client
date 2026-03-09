@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Switch } from '@/components/ui/switch';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { CreateProjectDto } from '@/interfaces/project/dto/create-project.dto';
 
 import { PageHeader } from '@/components/page-header';
@@ -82,6 +82,8 @@ const CreateProject = () => {
     const imageInputRef = useRef<HTMLInputElement>(null);
     const documentInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
+    const location = useLocation();
+    const returnTo: string | undefined = location.state?.returnTo;
     const createProject = useCreateProject();
     const properties = useProperties({ page: 1, status: "active", lite: true });
 
@@ -195,7 +197,7 @@ const CreateProject = () => {
 
             createProject.mutate(formData as unknown as CreateProjectDto, {
                 onSuccess: () => {
-                    navigate('/projects');
+                    navigate(returnTo || '/projects');
                 },
             });
         } else {
@@ -211,7 +213,7 @@ const CreateProject = () => {
         <>
             <PageBackButton
                 text='Back to Projects'
-                onClick={() => navigate('/projects')}
+                onClick={() => navigate(returnTo || '/projects')}
             />
             <PageHeader
                 title="Create New Project"

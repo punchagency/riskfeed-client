@@ -25,6 +25,10 @@ const ProjectDetails: React.FC = () => {
         return `$${min?.toLocaleString()} / $${max?.toLocaleString()}`;
     };
 
+    const handleInviteContractor = (contractorId: string) => {
+        navigate(`/contractors/invite/${contractorId}`, { state: { project } });
+    };
+
 
     return (
         <>
@@ -149,11 +153,14 @@ const ProjectDetails: React.FC = () => {
                                 contractor={contractorData.contractor}
                                 matchPercentage={Math.round(contractorData.matchPercentage)}
                                 riskFactor={contractorData.riskFactor}
+                                onInvite={handleInviteContractor}
                             />
                         ))}
                     </div>
                 )}
             </div>
+
+
         </>
     )
 }

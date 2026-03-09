@@ -11,6 +11,8 @@ const ProjectDetail = lazy(() => import('@/pages/user/project/project-details'))
 const Properties = lazy(() => import('@/pages/user/properties/properties'));
 const CreateProperty = lazy(() => import('@/pages/user/properties/create-property'));
 const UpdateProperty = lazy(() => import('@/pages/user/properties/update-property'));
+const Contractor = lazy(() => import('@/pages/user/contractor/contractor'));
+const Invite = lazy(() => import('@/pages/user/invite/invite'));
 
 export const userRoutes: RouteObject[] = [
   {
@@ -43,6 +45,14 @@ export const userRoutes: RouteObject[] = [
       {
         path: '/properties/update/:id',
         element: <UpdateProperty />,
+      },
+      {
+        path: '/contractors',
+        element: <Contractor />,
+      },
+      {
+        path: '/contractors/invite/:contractorId',
+        element: <Invite />,
       },
     ],
   },

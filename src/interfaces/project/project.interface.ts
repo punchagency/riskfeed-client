@@ -5,6 +5,7 @@ export const PROJECT_STATUSES = ['draft', 'published', 'in_progress', 'completed
 export const PROJECT_MILESTONES_STATUSES = ['pending', 'in_progress', 'completed', 'cancelled',] as const;
 export const PROJECT_RISK_LEVELS = ['low', 'medium', 'high'] as const;
 export const PROJECT_TYPES = ['kitchen_remodeling', 'bathroom_remodeling', 'roofing', 'flooring', 'painting', 'electrical', 'plumbing', 'hvac', 'landscaping', 'deck_patio', 'basement_finishing', 'windows_doors',] as const;
+export const PROJECT_INVITATION_STATUSES = ['pending', 'accepted', 'rejected',] as const;
 
 
 interface IProjectMilestone {
@@ -21,6 +22,15 @@ interface IProjectMatchEvaluation {
     matchPercentage: number;
     riskFactor: number;
     evaluatedAt: Date;
+}
+
+interface IProjectInvitation {
+    _id: string;
+    contractor: string;
+    message?: string;
+    status: typeof PROJECT_INVITATION_STATUSES[number];
+    invitedAt: Date;
+    respondedAt?: Date;
 }
 
 export interface IProject {
@@ -46,4 +56,7 @@ export interface IProject {
     matchEvaluations?: IProjectMatchEvaluation[];
     matchPercentage?: number;
     riskFactor?: number;
+    projectDocuments?: string[];
+    projectImages?: string[];
+    invitations?: IProjectInvitation[];
 }

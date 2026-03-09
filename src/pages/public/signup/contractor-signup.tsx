@@ -115,8 +115,11 @@ const ContractorSignup = () => {
                 teamSize: data.teamSize
             }
         };
-        registerUser.mutate(payload);
-        navigate("/signin")
+        registerUser.mutate(payload, {
+            onSuccess: () => {
+                navigate('/activate-account', { state: { email: data.email } });
+            }
+        });
     };
 
     const nextStep = async () => {

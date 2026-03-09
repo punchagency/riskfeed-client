@@ -130,4 +130,8 @@ export interface IContractor {
     certifications: IContractorCertification[];
     portfolio: IContractorPortfolioItem[];
     savedProjects: string[];
+    riskScore?: number;
+    activeProjects?: number;
+    completedProjects?: number;
+    averageBudget?: number;
 }

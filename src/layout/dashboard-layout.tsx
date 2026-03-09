@@ -21,10 +21,10 @@ export default function DashboardLayout() {
   const [open, setOpen] = useState(false);
 
   const getInitials = () => {
-    if (user?.firstName && user?.lastName) {
-      return `${user.firstName[0]}${user.lastName[0]}`.toUpperCase();
+    if (user?.user?.firstName && user?.user?.lastName) {
+      return `${user.user.firstName[0]}${user.user.lastName[0]}`.toUpperCase();
     }
-    return user?.firstName?.[0]?.toUpperCase() || "U";
+    return user?.user?.firstName?.[0]?.toUpperCase() || "U";
   };
 
   const handleLogout = () => {
@@ -61,17 +61,17 @@ export default function DashboardLayout() {
               <PopoverTrigger asChild>
                 <button className="flex items-center gap-2 px-3 py-2 border rounded-xl hover:bg-accent transition-colors">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user?.profilePicture} />
+                    <AvatarImage src={user?.user?.profilePicture} />
                     <AvatarFallback className="bg-primary text-primary-foreground text-xs">
                       {getInitials()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-col hidden md:flex items-start">
                     <span className="font-medium text-sm text-foreground leading-tight">
-                      {user?.firstName} {user?.lastName}
+                      {user?.user?.firstName} {user?.user?.lastName}
                     </span>
                     <span className="text-xs text-muted-foreground leading-tight capitalize">
-                      {user?.role === "user" ? "Homeowner" : user?.role}
+                      {user?.user?.role === "user" ? "Homeowner" : user?.user?.role}
                     </span>
                   </div>
                   {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> :<ChevronUp className="h-4 w-4 text-muted-foreground" />}
@@ -81,22 +81,22 @@ export default function DashboardLayout() {
                 <div className="p-4 border-b">
                   <div className="flex items-center gap-3">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src={user?.profilePicture} />
+                      <AvatarImage src={user?.user?.profilePicture} />
                       <AvatarFallback className="bg-primary text-primary-foreground">
                         {getInitials()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-foreground truncate">
-                        {user?.firstName} {user?.lastName}
+                        {user?.user?.firstName} {user?.user?.lastName}
                       </p>
                       <span className="text-xs font-medium text-primary capitalize">
-                        {user?.role === "user" ? "Homeowner" : user?.role}
+                        {user?.user?.role === "user" ? "Homeowner" : user?.user?.role}
                       </span>
                     </div>
                   </div>
                     <p className="text-xs text-muted-foreground truncate mt-2">
-                      {user?.email}
+                      {user?.user?.email}
                     </p>
                 </div>
                 <div className="p-2">

@@ -21,6 +21,7 @@ import {
   Award,
   MessageSquare,
   House,
+  Wallet,
 } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main";
@@ -55,6 +56,8 @@ const getRoleBasedMenuItems = (role: string) => {
       { title: "Dashboard", url: "", icon: LayoutDashboard },
       { title: "My Jobs", url: "/jobs", icon: Briefcase },
       { title: "Opportunites", url: "/opportunities", icon: TrendingUp },
+      { title: "Wallet", url: "/wallet", icon: Wallet },
+      { title: "Escrow & Payments", url: "/escrow-payments", icon: ShoppingCart },
       { title: "Certifications", url: "/certifications", icon: Award },
       { title: "Earnings", url: "/earnings", icon: DollarSign },
       { title: "Messages", url: "/messages", icon: MessageSquare },
@@ -64,8 +67,11 @@ const getRoleBasedMenuItems = (role: string) => {
       { title: "Properties", url: "/properties", icon: House },
       { title: "Projects", url: "/projects", icon: FolderKanban },
       { title: "Contractors", url: "/contractors", icon: Users },
-      { title: "Risk Monitor", url: "/risk-monitor", icon: Shield },
       { title: "Messages", url: "/messages", icon: ShoppingCart },
+      { title: "Wallet", url: "/wallet", icon: Wallet },
+      { title: "Escrow & Payments", url: "/escrow-payments", icon: ShoppingCart },
+      { title: "Risk Monitor", url: "/risk-monitor", icon: Shield },
+      { title: "Reports", url: "/reports", icon: BarChart3 },
     ],
     admin: [
       { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -96,7 +102,7 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useReduxAuth();
-  const userRole = user?.role || "user";
+  const userRole = user?.user?.role || "user";
   const menuItems = getRoleBasedMenuItems(userRole);
   const [showLogoutDialog, setShowLogoutDialog] = React.useState(false);
   const navigate = useNavigate();

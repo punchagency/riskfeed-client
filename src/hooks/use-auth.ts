@@ -108,6 +108,15 @@ export const useActivateAccount = () => {
     });
 };
 
+export const useResendActivationEmail = () => {
+    return useMutation({
+        mutationFn: AuthApi.resendActivationCode,
+        onError: (error) => {
+            APIErrorResponse(error);
+        },
+    });
+}
+
 export const useForgotPassword = () => {
     return useMutation({
         mutationFn: AuthApi.forgotPassword,
@@ -126,6 +135,14 @@ export const useResetPassword = () => {
     });
 };
 
+export const useResendResetPasswordCode = () => {
+    return useMutation({
+        mutationFn: AuthApi.resendResetCode,
+        onError: (error) => {
+            APIErrorResponse(error);
+        },
+    });
+}
 export const useChangePassword = () => {
     return useMutation({
         mutationFn: AuthApi.changePassword,

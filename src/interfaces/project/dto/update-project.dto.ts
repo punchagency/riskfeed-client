@@ -1,29 +1,4 @@
-import type { PROJECT_MILESTONES_STATUSES, PROJECT_STATUSES } from "../project.interface";
-
-interface AddressDto {
-    street: string;
-    zipcode: string;
-    city: string;
-    state: string;
-    country: string;
-}
-
-interface PropertyDto {
-    type: string;
-    name?: string;
-    address: AddressDto;
-    ownershipType?: string;
-    sizeSqFt?: number;
-    ownerName?: string;
-}
-
-interface MilestoneDto {
-    name: string;
-    percentage: number;
-    amount: number;
-    sequence: number;
-    status?: typeof PROJECT_MILESTONES_STATUSES[number];
-}
+import type { PROJECT_RISK_LEVELS, PROJECT_STATUSES, PROJECT_TYPES } from "../project.interface";
 
 interface DurationRangeDto {
     minDays: number;
@@ -33,12 +8,13 @@ interface DurationRangeDto {
 export interface UpdateProjectDto {
     title?: string;
     description?: string;
-    property?: PropertyDto;
+    projectType?: typeof PROJECT_TYPES[number];
+    propertyId?: string;
     minBudget?: number;
     maxBudget?: number;
     durationDays?: number;
     durationRange?: DurationRangeDto;
-    startDate?: string;
+    startDate?: Date;
     status?: typeof PROJECT_STATUSES[number];
-    milestones?: MilestoneDto[];
+    riskLevel?: typeof PROJECT_RISK_LEVELS[number];
 }

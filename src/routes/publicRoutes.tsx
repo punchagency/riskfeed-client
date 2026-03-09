@@ -7,6 +7,8 @@ const Signin = lazy(() => import('@/pages/public/signin'));
 const ContractorRegister = lazy(() => import('@/pages/public/signup/contractor-signup'));
 const HomeownerRegister = lazy(() => import('@/pages/public/signup/homeowner-signup'));
 const Logout = lazy(() => import('@/pages/general/logout'));
+const ActivateAccount = lazy(() => import('@/pages/public/activate-account'));
+const ForgotPassword = lazy(() => import('@/pages/public/forgot-password'));
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -28,5 +30,13 @@ export const publicRoutes: RouteObject[] = [
   {
     element: <Logout />,
     path: '/logout'
+  },
+  {
+    element: <ActivateAccount />,
+    path: '/activate-account'
+  },
+  {
+    element: <ForgotPassword />,
+    path: '/forgot-password'
   }
 ];

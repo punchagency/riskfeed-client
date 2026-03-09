@@ -37,4 +37,5 @@ export interface GetPropertiesDto {
     search?: string;
     status?: typeof PROPERTY_STATUS[number];
     propertyType?: typeof PROPERTIES_TYPES[number];
+    lite?: boolean;
 }

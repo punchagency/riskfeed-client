@@ -17,8 +17,8 @@ const App = () => {
   const isAuthenticated = isLoggedIn();
 
   const getAuthenticatedRoutes = () => {
-    if (!isAuthenticated || !user?.role) return null;
-    switch (user.role) {
+    if (!isAuthenticated || !user?.user?.role) return null;
+    switch (user.user.role) {
       case "user":
         return userRoutes;
       case "contractor":

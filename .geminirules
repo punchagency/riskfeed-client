@@ -1,0 +1,334 @@
+# Frontend AI Agent Rules — RiskFeed Client
+
+You are an exceptionally talented and thoughtful professional frontend developer. You write clean, maintainable, type-safe code following the conventions and patterns already established in this project. **Study the existing codebase before writing any code** — consistency with existing patterns is mandatory.
+
+---
+
+## 1. Technology Stack
+
+This project uses the following core technologies. **Do not introduce alternative libraries** for any of these responsibilities without explicit approval:
+
+| Responsibility        | Technology                                         |
+| --------------------- | -------------------------------------------------- |
+| Framework             | **React 19** with **TypeScript** (strict mode)     |
+| Build Tool            | **Vite** (with `@vitejs/plugin-react-swc`)         |
+| Styling               | **Tailwind CSS v4** (via `@tailwindcss/vite`)      |
+| UI Components         | **Shadcn UI** (`new-york` style, Lucide icons)     |
+| State Management      | **Redux Toolkit** + `redux-persist`                |
+| Server State          | **TanStack React Query v5**                        |
+| HTTP Client           | **Axios** (via the project's `api` client)         |
+| Animation             | **Framer Motion**                                  |
+| Routing               | **React Router DOM v7**                            |
+| Forms                 | **React Hook Form** + **Zod** validation           |
+| Notifications/Toasts  | **Sonner** (via `@/components/ui/sonner`)          |
+| Icons                 | **Lucide React** and **React Icons**               |
+| Error Monitoring      | **Sentry** (production only)                       |
+| Real-time             | **Socket.IO Client**                               |
+
+---
+
+## 2. Project Structure & File Organization
+
+Follow the existing directory structure strictly. Place files in the correct directories:
+
+```
+src/
+├── api/                  # API layer (client, config, endpoints, services)
+│   ├── client.ts         # Axios instance with interceptors — DO NOT DUPLICATE
+│   ├── config.ts         # Environment-based API config
+│   ├── api_endpoints.ts  # Centralized endpoint constants
+│   ├── queryClient.ts    # TanStack Query client defaults
+│   └── services/         # API service objects grouped by domain
+├── components/
+│   ├── ui/               # Shadcn UI primitives — DO NOT manually edit
+│   └── [shared]/         # Reusable project components
+├── config/               # App configuration (e.g., Sentry)
+├── constants/            # App-wide constants (e.g., status styles)
+├── context/              # React context providers
+├── hooks/                # Custom React hooks
+├── interfaces/           # TypeScript interfaces & DTOs
+│   └── [domain]/
+│       └── dto/          # Data Transfer Objects for API payloads
+├── layout/               # Layout wrappers (e.g., DashboardLayout)
+├── lib/                  # Utility libraries (e.g., cn() helper)
+├── pages/                # Page-level components, grouped by role
+│   ├── admin/
+│   ├── contractor/
+│   ├── public/
+│   └── user/
+├── routes/               # Route definitions, grouped by role
+├── store/                # Redux store
+│   ├── index.ts          # Store config with persistence
+│   ├── hooks.ts          # Typed hooks (useAppDispatch, useAppSelector)
+│   └── slices/           # Redux slices (use _template.ts as reference)
+└── utils/                # General utility functions
+```
+
+### File Naming Conventions
+
+- **Components**: PascalCase for component files (e.g., `ErrorBoundary.tsx`)
+- **Shadcn UI components**: kebab-case (e.g., `alert-dialog.tsx`) — follow Shadcn's naming
+- **Hooks**: kebab-case prefixed with `use-` (e.g., `use-auth.ts`, `use-mobile.ts`)
+- **Redux slices**: camelCase suffixed with `Slice` (e.g., `authSlice.ts`)
+- **Interfaces/DTOs**: kebab-case with `.interface.ts` or `.dto.ts` suffix
+- **Utils/Services**: camelCase or PascalCase matching existing patterns
+- **Constants**: kebab-case (e.g., `status-styles.ts`)
+
+---
+
+## 3. Styling & Theming
+
+### Color Theme
+
+- **Always use the project's CSS variable-based theme** defined in `src/index.css`.
+- Reference theme colors using Tailwind utility classes mapped to CSS variables (e.g., `bg-primary`, `text-foreground`, `border-border`, `bg-card`, `text-muted-foreground`).
+- The project supports **light and dark mode** via the `.dark` class on the root element.
+- **Never hardcode color values** (hex, rgb, oklch) directly in components. Use the theme tokens.
+- Only in exceptional circumstances where the design system tokens are insufficient should you use raw color values — and document why.
+
+### Tailwind CSS v4
+
+- Use Tailwind v4 conventions. The project imports `@tailwindcss` and `shadcn/tailwind.css` in `index.css`.
+- Use the `cn()` utility from `@/lib/utils` to merge conditional class names.
+- The project uses the **Inter** font family as its global typeface.
+
+### Responsive Design
+
+- Build **mobile-first** layouts.
+- Use Tailwind's responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`) for breakpoints.
+- Reference `@/hooks/use-mobile.ts` for programmatic breakpoint detection when needed.
+
+---
+
+## 4. Component Development
+
+### Shadcn UI Components
+
+- **Use existing Shadcn UI components** from `@/components/ui/` before building custom ones.
+- If a required Shadcn component doesn't exist, add it using the `shadcn` CLI (`npx shadcn@latest add <component>`).
+- **Never manually edit** the files inside `@/components/ui/` — they are managed by Shadcn CLI.
+- Import all Shadcn components with the `@/components/ui/` path alias.
+
+### Loading States
+
+- **Always** use the Shadcn `<Skeleton />` component from `@/components/ui/skeleton` for loading states when fetching data from API endpoints.
+- Build skeleton loaders that structurally mirror the real component's layout (same widths, heights, spacing) for a polished shimmer effect.
+- For full-page loading (lazy-loaded routes), use the `<Loading />` component from `@/components/ui/Loading`.
+
+### Animation
+
+- Use **Framer Motion** for entrance animations, transitions, and micro-interactions.
+- Keep animations subtle and purposeful — avoid excessive or distracting motion.
+- Use Framer Motion's `AnimatePresence` for mount/unmount transitions.
+
+### Error Handling
+
+- Wrap route-level content with the project's `<ErrorBoundary />` (already configured in `App.tsx`).
+- Show user-friendly error states with retry options where appropriate.
+- Use the `HandleAPIError` utility from `@/utils/HandleAPIError` for consistent API error handling.
+
+---
+
+## 5. State Management
+
+### Redux Toolkit (Client State)
+
+- Use Redux for **persistent, cross-component client state** (auth, user profile, theme, etc).
+- **Always use typed hooks**: `useAppDispatch` and `useAppSelector` from `@/store/hooks`.
+- When creating new slices, **copy `@/store/slices/_template.ts`** as a starting point.
+- After creating a slice:
+  1. Import and add the reducer to `rootReducer` in `@/store/index.ts`.
+  2. Add to the `whitelist` array in `persistConfig` if the state should persist across sessions.
+  3. Create a corresponding custom hook in `@/hooks/` if necessary.
+- Keep slice state minimal — avoid duplicating server state in Redux.
+
+### TanStack React Query (Server State)
+
+- Use TanStack Query for **all server state** — data fetching, caching, mutations, and cache invalidation.
+- Follow the established pattern in `@/hooks/use-auth.ts`:
+  - `useQuery` for data fetching with descriptive `queryKey` arrays.
+  - `useMutation` for create/update/delete operations.
+  - Handle `onSuccess` callbacks to update Redux state and invalidate related queries via `queryClient.invalidateQueries()`.
+  - Handle `onError` callbacks with `APIErrorResponse()` for consistent error toasts.
+- Do not use `useEffect` + `useState` for data fetching — always prefer TanStack Query.
+- Respect the default `staleTime` (5 min) and `gcTime` (10 min) configured in `@/api/queryClient.ts`.
+
+### When to Use Which
+
+| Use Case                           | Solution                      |
+| ---------------------------------- | ----------------------------- |
+| Auth tokens, user session          | Redux (persisted)             |
+| User profile data, theme           | Redux (persisted)             |
+| API response data, lists, details  | TanStack Query                |
+| Form state                         | React Hook Form               |
+| Component-local UI state           | `useState` / `useReducer`     |
+
+---
+
+## 6. API Layer
+
+### HTTP Requests
+
+- **Always use** the project's `api` client from `@/api/client.ts`. Never create new Axios instances.
+- The client automatically handles:
+  - Bearer token injection from cookies
+  - Token refresh on new cookies from server
+  - 401 redirects to login
+  - 429 rate-limit retries
+  - Sentry error capture for 500+ errors
+  - Automatic retries for network failures (up to 3 attempts)
+
+### API Endpoints
+
+- Define all new endpoints in `@/api/api_endpoints.ts` as grouped constant objects.
+- Never hardcode endpoint URLs in components, hooks, or services.
+
+### API Services
+
+- Create domain-specific service objects in `@/api/services/`.
+- Follow the pattern in `@/api/services/auth.ts`:
+  ```typescript
+  import api from "../client";
+  import API_ENDPOINTS from "../api_endpoints";
+
+  const DomainApi = {
+    getItems: () => api.get(API_ENDPOINTS.domain.getItems),
+    createItem: (data: CreateItemDto) => api.post(API_ENDPOINTS.domain.createItem, data),
+  };
+
+  export default DomainApi;
+  ```
+- Mark unauthenticated requests explicitly with `{ authenticated: false }`.
+
+---
+
+## 7. Routing
+
+- Use **lazy loading** (`React.lazy`) for all page-level components.
+- Define routes using `RouteObject[]` arrays in the appropriate file under `@/routes/`:
+  - `publicRoutes.tsx` — accessible without authentication
+  - `userRoutes.tsx` — user role routes (wrapped in `DashboardLayout`)
+  - `contractorRoutes.tsx` — contractor role routes
+  - `adminRoutes.tsx` — admin role routes
+- Authenticated routes are nested under the `<DashboardLayout />` component which provides the sidebar, header, and main content area via `<Outlet />`.
+- Use the `@/` path alias for all imports in route files.
+
+---
+
+## 8. Forms & Validation
+
+- Use **React Hook Form** with `@hookform/resolvers` for form management.
+- Define validation schemas with **Zod**.
+- Use Shadcn's `<Form />`, `<FormField />`, `<FormItem />`, `<FormLabel />`, `<FormControl />`, and `<FormMessage />` components for consistent form UI.
+- For form submission, use TanStack Query mutations.
+
+---
+
+## 9. TypeScript Conventions
+
+- Enable and respect **strict TypeScript** — no `any` types unless absolutely unavoidable (and annotate with `// eslint-disable-next-line @typescript-eslint/no-explicit-any`).
+- Define interfaces in `@/interfaces/` grouped by domain.
+- Use DTOs (Data Transfer Objects) in `@/interfaces/[domain]/dto/` for API request/response shapes.
+- Export types using `export type` / `export interface` (project uses `verbatimModuleSyntax`).
+- Use `import type` for type-only imports to ensure they are erased at build time.
+- Use the `@/` path alias for all imports — never use relative paths that go more than one level up (`../../`).
+
+---
+
+## 10. Notifications & Toasts
+
+- Use **Sonner** for all toast notifications via the `toast` function from `sonner`.
+- The `<Toaster />` is already configured globally in `App.tsx` with `richColors` and `position="top-right"`.
+- Use descriptive toast messages:
+  - `toast.success()` for successful operations
+  - `toast.error()` for failures
+  - `toast.loading()` for in-progress states
+
+---
+
+## 11. Error Handling Patterns
+
+- Use the `APIErrorResponse` utility from `@/utils/HandleAPIError` in all mutation `onError` callbacks.
+- For UI-level error boundaries, use the existing `<ErrorBoundary />` component.
+- Never swallow errors silently — always provide user feedback.
+
+---
+
+## 12. Code Quality & Best Practices
+
+- **No console.log in production code** — use Sentry for error tracking.
+- **No unused imports or variables** — the project enforces `noUnusedLocals` and `noUnusedParameters` in TypeScript.
+- **Use functional components** with hooks — no class components.
+- **Prefer `const` arrow functions** for component definitions.
+- **Keep components focused** — extract logic into custom hooks, extract reusable UI into shared components.
+- **Use `cn()`** for conditional class concatenation — never string interpolation for Tailwind classes.
+- **Use descriptive naming** for variables, functions, and components.
+- Run `npm run build` before considering a feature complete to ensure zero TypeScript errors.
+- Follow the existing ESLint configuration — do not disable rules without justification.
+
+---
+
+## 13. Import Order Convention
+
+Follow this import ordering:
+
+```typescript
+// 1. React and React ecosystem
+import { useState, useEffect } from "react";
+
+// 2. Third-party libraries
+import { motion } from "framer-motion";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+// 3. Internal absolute imports (@/)
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAppSelector } from "@/store/hooks";
+import api from "@/api/client";
+import type { UserInterface } from "@/interfaces/user/user.interface";
+
+// 4. Relative imports (if any)
+import { localHelper } from "./helpers";
+
+// 5. Styles & assets (if any)
+import logo from "../assets/images/logo.png";
+```
+
+---
+
+## 14. Quick Reference: Do's and Don'ts
+
+### ✅ Do
+
+- Use Shadcn `<Skeleton />` for all loading states during data fetching
+- Use TanStack Query for all API data fetching
+- Use Redux for persistent client state only
+- Use the `api` client from `@/api/client.ts` for all HTTP requests
+- Use `cn()` from `@/lib/utils` for conditional classes
+- Use Framer Motion for animations
+- Use Sonner `toast` for user notifications
+- Use CSS variable theme tokens for colors
+- Use `import type` for type-only imports
+- Use the `@/` path alias for all imports
+- Create skeleton loaders that mirror the real component layout
+- Lazy load all page components
+- Define all API endpoints in `api_endpoints.ts`
+
+### ❌ Don't
+
+- Don't create new Axios instances — use the shared `api` client
+- Don't hardcode hex/rgb color values — use theme variables
+- Don't use `useEffect` + `useState` for API data fetching
+- Don't manually edit files inside `@/components/ui/`
+- Don't use `any` without ESLint disable annotation
+- Don't use `useDispatch`/`useSelector` directly — use `useAppDispatch`/`useAppSelector`
+- Don't hardcode API URLs — use `API_ENDPOINTS`
+- Don't import from `react-redux` directly in components — use the typed hooks
+- Don't put server state in Redux — that's what TanStack Query is for
+- Don't skip loading/error states — every data-dependent UI needs both
+- Don't skip form validation — always use Zod schemas with React Hook Form
+- Don't introduce new libraries without explicit approval
+
+
+# Ask me clarifying question until you are 95% certain that you have enough information to build or integrate any implementations.

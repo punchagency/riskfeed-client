@@ -1,4 +1,5 @@
-import type { CONTRACTOR_SERVICES, HEARD_ABOUT_SOURCES, OWNERSHIP_TYPES, PROPERTY_TYPES, ROLES, TEAM_SIZE_BUCKETS, USER_STATUSES } from "../user.interface";
+import type { PROJECT_TYPES } from "@/interfaces/project/project.interface";
+import type { HEARD_ABOUT_SOURCES, OWNERSHIP_TYPES, PROPERTY_TYPES, ROLES, TEAM_SIZE_BUCKETS, USER_STATUSES } from "../user.interface";
 
 interface UpdateAddressDto {
   street?: string;
@@ -45,7 +46,7 @@ interface UpdateContractorDataDto {
   businessPhone?: string;
   businessWebsite?: string;
   businessAddress?: UpdateAddressDto;
-  services?: typeof CONTRACTOR_SERVICES[number][];
+  services?: typeof PROJECT_TYPES[number][];
   serviceAreas?: string[];
   teamSize?: typeof TEAM_SIZE_BUCKETS[number];
   insurance?: UpdateInsuranceDto;

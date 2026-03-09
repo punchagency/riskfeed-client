@@ -4,6 +4,7 @@ export const PROPERTIES_TYPES = ['single_family_home', 'townhouse', 'condominium
 export const PROPERTY_STATUS = ['active', 'sold', 'archived', 'lease', 'rented'] as const;
 
 export interface IProperties {
+    _id: string;
     user: string;
     name: string;
     propertyType: typeof PROPERTIES_TYPES[number];

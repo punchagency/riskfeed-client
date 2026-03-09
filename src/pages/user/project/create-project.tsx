@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ImagePlus, FileText, X } from 'lucide-react';
@@ -12,42 +12,80 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Switch } from '@/components/ui/switch';
 import { useNavigate } from 'react-router-dom';
 import type { CreateProjectDto } from '@/interfaces/project/dto/create-project.dto';
-import { OWNERSHIP_TYPES, PROPERTY_TYPES } from '@/interfaces/user/user.interface';
-import { useReduxAuth } from '@/hooks/use-auth';
+
 import { PageHeader } from '@/components/page-header';
 import { PageBackButton } from '@/components/page-back-button';
+import { useProperties } from '@/hooks/use-properties';
+import type { IProperties } from '@/interfaces/properties/properties.interface';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { PROJECT_TYPES } from '@/interfaces/project/project.interface';
 
 const projectSchema = z.object({
     title: z.string().min(1, 'Project title is required'),
     description: z.string().min(1, 'Description is required'),
-    propertyType: z.string().min(1, 'Property type is required'),
-    propertyName: z.string().optional(),
-    street: z.string().min(1, 'Street is required'),
-    city: z.string().min(1, 'City is required'),
-    state: z.string().min(1, 'State is required'),
-    zipcode: z.string().min(1, 'Zipcode is required'),
-    country: z.string().min(1, 'Country is required'),
-    ownershipType: z.string().optional(),
-    propertySize: z.string().optional(),
-    propertyOwnerName: z.string().optional(),
+    projectType: z.enum(PROJECT_TYPES),
+    propertyId: z.string().min(1, 'Please select a property'),
     minBudget: z.string().min(1, 'Minimum budget is required'),
     maxBudget: z.string().min(1, 'Maximum budget is required'),
     useDurationRange: z.boolean(),
     durationDays: z.string().optional(),
     minDays: z.string().optional(),
     maxDays: z.string().optional(),
-    startDate: z.string().optional(),
+    startDate: z.string().min(1, 'Start date is required'),
+}).superRefine((data, ctx) => {
+    if (data.useDurationRange) {
+        if (!data.minDays) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Minimum days is required",
+                path: ["minDays"],
+            });
+        }
+        if (!data.maxDays) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Maximum days is required",
+                path: ["maxDays"],
+            });
+        }
+        if (data.minDays && data.maxDays && Number(data.minDays) > Number(data.maxDays)) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Min days cannot exceed max days",
+                path: ["minDays"],
+            });
+        }
+    } else {
+        if (!data.durationDays) {
+            ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: "Duration in days is required",
+                path: ["durationDays"],
+            });
+        }
+    }
+    
+    if (data.minBudget && data.maxBudget && Number(data.minBudget) > Number(data.maxBudget)) {
+        ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Min budget cannot exceed max budget",
+            path: ["minBudget"],
+        });
+    }
 });
 
 const CreateProject = () => {
-    const { user } = useReduxAuth();
+
     const [step, setStep] = useState(1);
-    const [propertyImages, setPropertyImages] = useState<File[]>([]);
-    const [propertyDocuments, setPropertyDocuments] = useState<File[]>([]);
+    const [projectImages, setProjectImages] = useState<File[]>([]);
+    const [projectDocuments, setProjectDocuments] = useState<File[]>([]);
     const imageInputRef = useRef<HTMLInputElement>(null);
     const documentInputRef = useRef<HTMLInputElement>(null);
     const navigate = useNavigate();
     const createProject = useCreateProject();
+    const properties = useProperties({ page: 1, status: "active", lite: true });
+
+    const propertiesData: IProperties[] = properties.data?.data?.items || [];
 
     const form = useForm<z.infer<typeof projectSchema>>({
         resolver: zodResolver(projectSchema),
@@ -55,16 +93,7 @@ const CreateProject = () => {
         defaultValues: {
             title: '',
             description: '',
-            propertyType: '',
-            propertyName: '',
-            street: '',
-            city: '',
-            state: '',
-            zipcode: '',
-            country: '',
-            ownershipType: '',
-            propertySize: '',
-            propertyOwnerName: '',
+            propertyId: '',
             minBudget: '',
             maxBudget: '',
             useDurationRange: false,
@@ -75,35 +104,41 @@ const CreateProject = () => {
         },
     });
 
-    const useDurationRange = form.watch('useDurationRange');
+    const useDurationRange = useWatch({ control: form.control, name: 'useDurationRange' });
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            setPropertyImages(prev => [...prev, ...Array.from(e.target.files!)]);
+            setProjectImages(prev => [...prev, ...Array.from(e.target.files!)]);
         }
     };
 
     const handleDocumentUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
-            setPropertyDocuments(prev => [...prev, ...Array.from(e.target.files!)]);
+            setProjectDocuments(prev => [...prev, ...Array.from(e.target.files!)]);
         }
     };
 
     const removeImage = (index: number) => {
-        setPropertyImages(prev => prev.filter((_, i) => i !== index));
+        setProjectImages(prev => prev.filter((_, i) => i !== index));
     };
 
     const removeDocument = (index: number) => {
-        setPropertyDocuments(prev => prev.filter((_, i) => i !== index));
+        setProjectDocuments(prev => prev.filter((_, i) => i !== index));
     };
 
     const validateStep = async (currentStep: number) => {
         let fieldsToValidate: (keyof z.infer<typeof projectSchema>)[] = [];
 
         if (currentStep === 1) {
-            fieldsToValidate = ['propertyType', 'street', 'city', 'state', 'zipcode', 'country'];
+            fieldsToValidate = ['propertyId'];
         } else if (currentStep === 2) {
-            fieldsToValidate = ['title', 'description', 'minBudget', 'maxBudget'];
+            fieldsToValidate = ['title', 'description', 'projectType', 'minBudget', 'maxBudget', 'startDate'];
+            const useRange = form.getValues('useDurationRange');
+            if (useRange) {
+                fieldsToValidate.push('minDays', 'maxDays');
+            } else {
+                fieldsToValidate.push('durationDays');
+            }
         }
 
         const result = await form.trigger(fieldsToValidate);
@@ -121,20 +156,8 @@ const CreateProject = () => {
         const payload: CreateProjectDto = {
             title: data.title,
             description: data.description,
-            property: {
-                type: data.propertyType,
-                name: data.propertyName,
-                address: {
-                    street: data.street,
-                    city: data.city,
-                    state: data.state,
-                    zipcode: data.zipcode,
-                    country: data.country,
-                },
-                ownershipType: data.ownershipType,
-                sizeSqFt: data.propertySize ? Number(data.propertySize) : undefined,
-                ownerName: data.propertyOwnerName,
-            },
+            projectType: data.projectType,
+            propertyId: data.propertyId,
             minBudget: Number(data.minBudget),
             maxBudget: Number(data.maxBudget),
             startDate: data.startDate,
@@ -149,20 +172,12 @@ const CreateProject = () => {
             payload.durationDays = data.durationDays ? Number(data.durationDays) : undefined;
         }
 
-        if (propertyImages.length > 0 || propertyDocuments.length > 0) {
+        if (projectImages.length > 0 || projectDocuments.length > 0) {
             const formData = new FormData();
             formData.append('title', payload.title);
             formData.append('description', payload.description);
-            formData.append('property.type', payload.property.type);
-            if (payload.property.name) formData.append('property.name', payload.property.name);
-            formData.append('property.address.street', payload.property.address.street);
-            formData.append('property.address.city', payload.property.address.city);
-            formData.append('property.address.state', payload.property.address.state);
-            formData.append('property.address.zipcode', payload.property.address.zipcode);
-            formData.append('property.address.country', payload.property.address.country);
-            if (payload.property.ownershipType) formData.append('property.ownershipType', payload.property.ownershipType);
-            if (payload.property.sizeSqFt) formData.append('property.sizeSqFt', payload.property.sizeSqFt.toString());
-            if (payload.property.ownerName) formData.append('property.ownerName', payload.property.ownerName);
+            formData.append('projectType', payload.projectType);
+            formData.append('propertyId', payload.propertyId);
             formData.append('minBudget', payload.minBudget.toString());
             formData.append('maxBudget', payload.maxBudget.toString());
             if (payload.startDate) formData.append('startDate', payload.startDate);
@@ -171,11 +186,11 @@ const CreateProject = () => {
                 formData.append('durationRange.minDays', payload.durationRange.minDays.toString());
                 formData.append('durationRange.maxDays', payload.durationRange.maxDays.toString());
             }
-            propertyImages.forEach(image => {
-                formData.append('propertyImages', image);
+            projectImages.forEach(image => {
+                formData.append('projectImages', image);
             });
-            propertyDocuments.forEach(doc => {
-                formData.append('propertyDocuments', doc);
+            projectDocuments.forEach(doc => {
+                formData.append('projectDocuments', doc);
             });
 
             createProject.mutate(formData as unknown as CreateProjectDto, {
@@ -255,181 +270,50 @@ const CreateProject = () => {
                             </div>
 
                             <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="propertyType"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Property Type <span className='text-destructive'>*</span></FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger className='w-full'>
-                                                            <SelectValue placeholder="Select property type" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        {PROPERTY_TYPES.map(type => (
-                                                            <SelectItem key={type} value={type}>
-                                                                {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="propertyName"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Property Name</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="Enter property name" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
                                 <FormField
                                     control={form.control}
-                                    name="street"
+                                    name="propertyId"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Street Address <span className='text-destructive'>*</span></FormLabel>
-                                            <FormControl>
-                                                <Input {...field} placeholder="Enter street address" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="city"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>City <span className='text-destructive'>*</span></FormLabel>
+                                            <FormLabel>Select Property <span className='text-destructive'>*</span></FormLabel>
+                                            <Select
+                                                onValueChange={(val) => {
+                                                    if (val === 'ADD_NEW') {
+                                                        navigate('/properties/create', { state: { returnTo: '/projects/create' } });
+                                                    } else {
+                                                        field.onChange(val);
+                                                    }
+                                                }}
+                                                value={field.value || undefined}
+                                            >
                                                 <FormControl>
-                                                    <Input {...field} placeholder="Enter city" />
+                                                    <SelectTrigger className='w-full'>
+                                                        <SelectValue placeholder="Select a property" />
+                                                    </SelectTrigger>
                                                 </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="state"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>State <span className='text-destructive'>*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="Enter state" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="zipcode"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Zipcode <span className='text-destructive'>*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="Enter zipcode" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="country"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Country <span className='text-destructive'>*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="Enter country" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="ownershipType"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Ownership Type <span className='text-destructive'>*</span></FormLabel>
-                                                <FormControl>
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl>
-                                                            <SelectTrigger className='w-full'>
-                                                                <SelectValue placeholder="Select ownership type" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            {OWNERSHIP_TYPES.map(type => (
-                                                                <SelectItem key={type} value={type}>
-                                                                    {type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="propertySize"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Property Size (sq ft)</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 2,500" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <FormField
-                                    control={form.control}
-                                    name="propertyOwnerName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Property Owner Name</FormLabel>
-                                            <FormControl>
-                                                <Input {...field} placeholder="Enter owner name" />
-                                            </FormControl>
+                                                <SelectContent>
+                                                    {propertiesData.length === 0 && (
+                                                        <div className="p-2 text-sm text-muted-foreground text-center">No properties found</div>
+                                                    )}
+                                                    {propertiesData.map(property => (
+                                                        <SelectItem key={property._id} value={property._id}>
+                                                            {property.name || `Property at ${property.address.street}`}
+                                                        </SelectItem>
+                                                    ))}
+                                                    <div className="h-px bg-muted my-1" />
+                                                    <SelectItem value="ADD_NEW" className="font-medium text-primary cursor-pointer focus:bg-primary/10">
+                                                        + Add new property
+                                                    </SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
 
                                 <div>
-                                    <FormLabel className="mb-2 block">Property Images</FormLabel>
-                                    <p className="text-sm text-muted-foreground mb-4">Upload photos of the property and areas where work will be done</p>
+                                    <FormLabel className="mb-2 block">Project Images</FormLabel>
+                                    <p className="text-sm text-muted-foreground mb-4">Upload relevant photos of the project and areas where work will be done</p>
                                     <input
                                         ref={imageInputRef}
                                         type="file"
@@ -446,9 +330,9 @@ const CreateProject = () => {
                                         <p className="font-medium mb-1">Click to upload images</p>
                                         <p className="text-sm text-muted-foreground">PNG, JPG, HEIC up to 10MB each</p>
                                     </div>
-                                    {propertyImages.length > 0 && (
+                                    {projectImages.length > 0 && (
                                         <div className="mt-4 grid grid-cols-4 gap-4">
-                                            {propertyImages.map((file, index) => (
+                                            {projectImages.map((file, index) => (
                                                 <div key={index} className="relative group">
                                                     <img
                                                         src={URL.createObjectURL(file)}
@@ -470,8 +354,8 @@ const CreateProject = () => {
                                 </div>
 
                                 <div>
-                                    <FormLabel className="mb-2 block">Property Documents</FormLabel>
-                                    <p className="text-sm text-muted-foreground mb-4">Upload relevant property documents</p>
+                                    <FormLabel className="mb-2 block">Project Documents</FormLabel>
+                                    <p className="text-sm text-muted-foreground mb-4">Upload relevant project documents</p>
                                     <input
                                         ref={documentInputRef}
                                         type="file"
@@ -488,9 +372,9 @@ const CreateProject = () => {
                                         <p className="font-medium mb-1">Click to upload documents</p>
                                         <p className="text-sm text-muted-foreground">PDF, DOC, DOCX up to 10MB each</p>
                                     </div>
-                                    {propertyDocuments.length > 0 && (
+                                    {projectDocuments.length > 0 && (
                                         <div className="mt-4 space-y-2">
-                                            {propertyDocuments.map((file, index) => (
+                                            {projectDocuments.map((file, index) => (
                                                 <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
                                                     <div className="flex items-center gap-2">
                                                         <FileText className="h-5 w-5 text-muted-foreground" />
@@ -538,6 +422,31 @@ const CreateProject = () => {
                                             <FormControl>
                                                 <Input {...field} placeholder="Enter project title" />
                                             </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                <FormField 
+                                    control={form.control}
+                                    name='projectType'
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Project Type <span className='text-destructive'>*</span></FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className='w-full'>
+                                                        <SelectValue placeholder="Select project type" />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    {PROJECT_TYPES.map((type) => (
+                                                        <SelectItem key={type} value={type}>
+                                                            {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -592,7 +501,7 @@ const CreateProject = () => {
                                     name="startDate"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Start Date</FormLabel>
+                                            <FormLabel>Start Date <span className='text-destructive'>*</span></FormLabel>
                                             <FormControl>
                                                 <Input {...field} type="date" />
                                             </FormControl>
@@ -623,7 +532,7 @@ const CreateProject = () => {
                                         name="durationDays"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Duration (Days)</FormLabel>
+                                                <FormLabel>Duration (Days) <span className='text-destructive'>*</span></FormLabel>
                                                 <FormControl>
                                                     <Input {...field} type="number" placeholder="e.g., 90" />
                                                 </FormControl>
@@ -638,7 +547,7 @@ const CreateProject = () => {
                                             name="minDays"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Minimum Days</FormLabel>
+                                                    <FormLabel>Minimum Days <span className='text-destructive'>*</span></FormLabel>
                                                     <FormControl>
                                                         <Input {...field} type="number" placeholder="e.g., 60" />
                                                     </FormControl>
@@ -652,7 +561,7 @@ const CreateProject = () => {
                                             name="maxDays"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel>Maximum Days</FormLabel>
+                                                    <FormLabel>Maximum Days <span className='text-destructive'>*</span></FormLabel>
                                                     <FormControl>
                                                         <Input {...field} type="number" placeholder="e.g., 120" />
                                                     </FormControl>
@@ -689,19 +598,34 @@ const CreateProject = () => {
 
                             <div className="space-y-6">
                                 <div className="rounded-lg border p-4">
-                                    <h3 className="font-semibold mb-3">Property Information</h3>
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="font-semibold">Property Information</h3>
+                                        <Button variant="ghost" className='text-primary'
+                                            onClick={() => setStep(1)}
+                                        >Edit</Button>
+                                    </div>
                                     <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div><span className="text-muted-foreground">Type:</span> {form.getValues('propertyType') ? form.getValues('propertyType').replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Name:</span> {form.getValues('propertyName') || 'N/A'}</div>
-                                        <div className="col-span-2"><span className="text-muted-foreground">Address:</span> {form.getValues('street')}, {form.getValues('city')}, {form.getValues('state')} {form.getValues('zipcode')}, {form.getValues('country')}</div>
-                                        <div><span className="text-muted-foreground">Ownership:</span> {form.getValues('ownershipType') ? form.getValues('ownershipType')?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : user?.role === 'user' ? 'Owner' : 'Tenant'}</div>
-                                        <div><span className="text-muted-foreground">Size:</span> {form.getValues('propertySize') ? `${form.getValues('propertySize')} sq ft` : 'N/A'}</div>
-                                        <div className="col-span-2"><span className="text-muted-foreground">Owner:</span> {form.getValues('propertyOwnerName') ? form.getValues('propertyOwnerName') : `${user?.firstName} ${user?.lastName}`}</div>
+                                        {(() => {
+                                            const prop = propertiesData.find(p => p._id === form.getValues('propertyId'));
+                                            if (!prop) return <div>No property selected</div>;
+                                            return (
+                                                <>
+                                                    <div><span className="text-muted-foreground">Type:</span> {prop.propertyType?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                                                    <div><span className="text-muted-foreground">Name:</span> {prop.name || 'N/A'}</div>
+                                                    <div className="col-span-2"><span className="text-muted-foreground">Address:</span> {prop.address?.street}, {prop.address?.city}, {prop.address?.state} {prop.address?.zipCode}, {prop.address?.country}</div>
+                                                </>
+                                            );
+                                        })()}
                                     </div>
                                 </div>
 
                                 <div className="rounded-lg border p-4">
-                                    <h3 className="font-semibold mb-3">Project Details</h3>
+                                    <div className="flex justify-between items-center">
+                                        <h3 className="font-semibold">Project Details</h3>
+                                        <Button variant="ghost" className='text-primary'
+                                            onClick={() => setStep(2)}
+                                        >Edit</Button>
+                                    </div>
                                     <div className="space-y-2 text-sm">
                                         <div><span className="text-muted-foreground">Title:</span> {form.getValues('title')}</div>
                                         <div><span className="text-muted-foreground">Description:</span> {form.getValues('description')}</div>
@@ -713,9 +637,18 @@ const CreateProject = () => {
                                                 ? `${form.getValues('minDays')} - ${form.getValues('maxDays')} days`
                                                 : form.getValues('durationDays') ? `${form.getValues('durationDays')} days` : 'Not specified'}
                                         </div>
+                                        <div><span className="text-muted-foreground">Project Documents:</span> {projectDocuments.length} uploaded</div>
+                                        <div><span className="text-muted-foreground">Project Images:</span> {projectImages.length} uploaded</div>
                                     </div>
                                 </div>
                             </div>
+
+                            <Alert className='mt-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg p-5 border border-blue-200 dark:border-blue-800'>
+                                <AlertTitle className='text-blue-900 dark:text-blue-300'>Next Steps: </AlertTitle>
+                                <AlertDescription className='text-blue-900 dark:text-blue-300'>
+                                    After creating this project, our AI will analyze your requirements and uploaded documents to match you with verified contractors. You'll receive contractor recommendations with detailed proposals within 24 hours. All uploaded documents and images will be securely stored and shared only with approved contractors.
+                                </AlertDescription>
+                            </Alert>
 
                             <div className="flex justify-between pt-6">
                                 <Button type="button" variant="outline" onClick={() => navigate(-1)}>

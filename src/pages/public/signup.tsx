@@ -72,10 +72,17 @@ const Signup = () => {
                     </Link>
                 </div>
 
-                <div className="text-center text-gray-600">
+                <div className="text-center text-gray-600 mb-2">
                     Already have an account?{' '}
                     <Link to="/signin" className="text-primary hover:underline font-medium">
                         Sign In
+                    </Link>
+                </div>
+
+                <div className="text-center text-gray-600">
+                    Account not activated?{' '}
+                    <Link to="/activate-account" className="text-primary hover:underline font-medium">
+                        Activate it here
                     </Link>
                 </div>
             </div>

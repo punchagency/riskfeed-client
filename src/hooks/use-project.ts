@@ -53,3 +53,12 @@ export const useProjectById = (id: string) => {
         enabled: !!id,
     });
 };
+
+export const useSuggestContractors = (id: string) => {
+    return useQuery({
+        queryKey: ['suggested-contractors', id],
+        queryFn: () => ProjectApi.suggestContractors(id),
+        select: (responose) => responose.data,
+        enabled: !!id 
+    })
+}

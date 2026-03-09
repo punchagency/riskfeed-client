@@ -1,25 +1,11 @@
+import type { IProperties } from "../properties/properties.interface";
 import type { IContractor } from "../user/user.interface";
 
 export const PROJECT_STATUSES = ['draft', 'published', 'in_progress', 'completed', 'cancelled',] as const;
 export const PROJECT_MILESTONES_STATUSES = ['pending', 'in_progress', 'completed', 'cancelled',] as const;
 export const PROJECT_RISK_LEVELS = ['low', 'medium', 'high'] as const;
+export const PROJECT_TYPES = ['kitchen_remodeling', 'bathroom_remodeling', 'roofing', 'flooring', 'painting', 'electrical', 'plumbing', 'hvac', 'landscaping', 'deck_patio', 'basement_finishing', 'windows_doors',] as const;
 
-interface IProjectPropertySnapshot {
-    type: string;
-    name?: string;
-    address: {
-        street: string;
-        zipcode: string;
-        city: string;
-        state: string;
-        country: string;
-    };
-    ownershipType?: string;
-    sizeSqFt?: number;
-    ownerName?: string;
-    images?: string[];
-    documents?: string[];
-}
 
 interface IProjectMilestone {
     name: string;
@@ -42,7 +28,8 @@ export interface IProject {
     homeowner: string;
     title: string;
     description: string;
-    property: IProjectPropertySnapshot;
+    projectType: typeof PROJECT_TYPES[number];
+    property: IProperties;
     minBudget: number;
     maxBudget: number;
     durationDays?: number;

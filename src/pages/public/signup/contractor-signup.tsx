@@ -11,9 +11,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { FaUser, FaBriefcase, FaCheckCircle, FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaCheck } from 'react-icons/fa';
 import Logo from '@/assets/images/logo.png';
 import type { RegisterUserDto } from '@/interfaces/user/dto/register-user.dto';
-import { CONTRACTOR_SERVICES, TEAM_SIZE_BUCKETS } from '@/interfaces/user/user.interface';
+import { TEAM_SIZE_BUCKETS } from '@/interfaces/user/user.interface';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { PROJECT_TYPES } from '@/interfaces/project/project.interface';
 
 const contractorSchema = z.object({
     // Step 1: Personal Information
@@ -29,7 +30,7 @@ const contractorSchema = z.object({
     yearsInBusiness: z.coerce.number().min(0, 'Years in business must be 0 or greater'),
     businessWebsite: z.string().url('Invalid website URL').optional().or(z.literal('')),
     teamSize: z.enum(TEAM_SIZE_BUCKETS),
-    services: z.array(z.enum(CONTRACTOR_SERVICES)).min(1, 'Please select at least one service'),
+    services: z.array(z.enum(PROJECT_TYPES)).min(1, 'Please select at least one service'),
     businessAddress: z.object({
         street: z.string().min(1, 'Business street address is required'),
         city: z.string().min(1, 'Business city is required'),
@@ -347,7 +348,7 @@ const ContractorSignup = () => {
                                             <FormItem className="pt-4">
                                                 <FormLabel className="text-secondary-foreground font-semibold">Services Offered <span className="text-destructive">*</span></FormLabel>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-4 bg-slate-50 rounded-xl mt-2 border border-slate-100">
-                                                    {CONTRACTOR_SERVICES.map((service) => (
+                                                    {PROJECT_TYPES.map((service) => (
                                                         <FormField key={service} control={form.control} name="services" render={({ field }) => (
                                                             <FormItem className="flex items-center space-x-3 space-y-0">
                                                                 <FormControl>

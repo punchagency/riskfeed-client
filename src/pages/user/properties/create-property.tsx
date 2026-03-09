@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { PageBackButton } from '@/components/page-back-button';
 import { PageHeader } from '@/components/page-header';
 import { useCreateProperty } from '@/hooks/use-properties';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,6 +41,8 @@ const propertySchema = z.object({
 
 const CreateProperty = () => {
     const navigate = useNavigate();
+    const location = useLocation();
+    const returnTo = location.state?.returnTo;
     const [step, setStep] = useState(1);
     const createProperty = useCreateProperty();
     const [propertyImages, setPropertyImages] = useState<File[]>([]);
@@ -150,13 +152,21 @@ const CreateProperty = () => {
 
             createProperty.mutate(formData as unknown as CreatePropertyDto, {
                 onSuccess: () => {
-                    navigate('/properties');
+                    if (returnTo) {
+                        navigate(returnTo);
+                    } else {
+                        navigate('/properties');
+                    }
                 },
             });
         } else {
             createProperty.mutate(payload, {
                 onSuccess: () => {
-                    navigate('/properties');
+                    if (returnTo) {
+                        navigate(returnTo);
+                    } else {
+                        navigate('/properties');
+                    }
                 },
             });
         }
@@ -392,7 +402,7 @@ const CreateProperty = () => {
                             </div>
 
                             <div className="flex justify-between pt-6">
-                                <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                                <Button type="button" variant="outline" onClick={() => navigate(returnTo || '/properties')}>
                                     Cancel
                                 </Button>
                                 <Button type="button" onClick={() => handleNextStep(2)}>
@@ -516,7 +526,7 @@ const CreateProperty = () => {
                             </div>
 
                             <div className="flex justify-between pt-6">
-                                <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                                <Button type="button" variant="outline" onClick={() => navigate(returnTo || '/properties')}>
                                     Cancel
                                 </Button>
                                 <div className='flex gap-4 items-center'>
@@ -629,7 +639,7 @@ const CreateProperty = () => {
                             </div>
 
                             <div className="flex justify-between pt-6">
-                                <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                                <Button type="button" variant="outline" onClick={() => navigate(returnTo || '/properties')}>
                                     Cancel
                                 </Button>
                                 <div className='flex gap-4 items-center'>
@@ -733,7 +743,7 @@ const CreateProperty = () => {
                             </div>
 
                             <div className="flex justify-between pt-6">
-                                <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                                <Button type="button" variant="outline" onClick={() => navigate(returnTo || '/properties')}>
                                     Cancel
                                 </Button>
                                 <div className='flex gap-4 items-center'>

@@ -1,49 +1,47 @@
 import { Calendar, DollarSign, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { IProject, PROJECT_RISK_LEVELS } from '@/interfaces/project/project.interface';
-import type { IUser } from '@/interfaces/user/user.interface';
 
 interface ProjectItemProps {
     project: IProject;
     onClick?: () => void;
-    user: IUser | null;
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const getRiskColor = (riskLevel: typeof PROJECT_RISK_LEVELS[number]) => {
     switch (riskLevel) {
         case 'low':
-            return 'text-green-700 dark:text-green-400 bg-green-500/20';
+            return 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400';
         case 'medium':
-            return 'text-orange-700 dark:text-orange-400 bg-orange-500/20';
+            return 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400';
         case 'high':
-            return 'text-red-700 dark:text-red-400 bg-red-500/20';
+            return 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400';
         default:
-            return 'bg-gray-500/20 text-gray-600 dark:text-gray-400';
+            return 'bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400';
     }
 };
 
 const getStatusColor = (status: string) => {
     switch (status) {
         case 'draft':
-            return 'bg-gray-500/20 text-gray-600 dark:text-gray-400';
+            return 'bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400';
         case 'published':
-            return 'bg-blue-500/20 text-blue-700 dark:text-blue-400';
+            return 'bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400';
         case 'in_progress':
-            return 'bg-indigo-500/20 text-indigo-700 dark:text-indigo-400';
+            return 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 dark:text-indigo-400';
         case 'completed':
-            return 'bg-green-500/20 text-green-700 dark:text-green-400';
+            return 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400';
         case 'cancelled':
-            return 'bg-red-500/20 text-red-700 dark:text-red-400';
+            return 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400';
         default:
-            return 'bg-gray-500/20 text-gray-700 dark:text-gray-400';
+            return 'bg-gray-50 dark:bg-gray-900/20 text-gray-600 dark:text-gray-400';
     }
 };
 
-export const ProjectItem: React.FC<ProjectItemProps> = ({ project, onClick, user }) => {
+export const ProjectItem: React.FC<ProjectItemProps> = ({ project, onClick }) => {
     const riskStyle = getRiskColor(project.riskLevel || "low");
     const statusStyle = getStatusColor(project.status);
-    
+
     const currentMilestone = project.milestones?.find(m => m.status === 'in_progress');
     const completedMilestones = project.milestones?.filter(m => m.status === 'completed').length || 0;
     const totalMilestones = project.milestones?.length || 0;
@@ -65,7 +63,7 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ project, onClick, user
         if (project.durationDays && project.startDate) {
             return `${formatDate(project.startDate)} - ${formatDate(new Date(new Date(project.startDate).getTime() + project.durationDays * 24 * 60 * 60 * 1000))}`;
         }
-        return 'Not specified';
+        return 'Not scheduled';
     };
 
     return (
@@ -82,25 +80,26 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ project, onClick, user
                         <MapPin className="size-4" />
                         <span>{project.property.address.street}, {project.property.address.city}, {project.property.address.state}</span>
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">{project.property.ownerName || `${user?.firstName} ${user?.lastName || ''}`}</p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                     <span className={cn('px-3 py-1 rounded-full text-xs font-medium', statusStyle)}>
-                        {project.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        {project.status === "published" ? "Not Started" : project.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </span>
-                    <span className={cn('px-2 py-1 rounded-full text-xs capitalize font-light', riskStyle)}>
-                        {project.riskLevel || "low Risk"}
-                    </span>
+                    {project.riskLevel && (
+                        <span className={cn('px-2 py-1 rounded-full text-xs capitalize font-light', riskStyle)}>
+                            {project.riskLevel}
+                        </span>
+                    )}
                 </div>
             </div>
 
-            {currentMilestone && (
+            {(currentMilestone || project.status === 'published') && (
                 <div className="mb-4">
                     <div className="flex items-center justify-between text-sm mb-2">
-                        <span className="text-muted-foreground">{currentMilestone.name}</span>
+                        <span className="text-muted-foreground">{currentMilestone?.name || 'No Contractor Assigned'}</span>
                         <span className="font-semibold">{Math.round(progress)}%</span>
                     </div>
-                    <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+                    <div className="w-full h-1.5 bg-secondary rounded-full overflow-hidden">
                         <div
                             className="h-full bg-primary transition-all duration-300"
                             style={{ width: `${progress}%` }}

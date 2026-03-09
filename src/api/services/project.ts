@@ -9,4 +9,5 @@ export const ProjectApi = {
     updateProject: (id: string, data: UpdateProjectDto) => api.patch(API_ENDPOINTS.project.updateProject.replace(":id", id), data),
     getProjects: (data: { page: number, limit?: number, search?: string, riskLevel?: typeof PROJECT_RISK_LEVELS[number],  status?: typeof PROJECT_STATUSES[number], minBudget?: number, maxBudget?: number }) => api.get(API_ENDPOINTS.project.getProjects, { params: { ...data } }),
     getProjectById: (id: string) => api.get(API_ENDPOINTS.project.getProjectById.replace(":id", id)),
+    suggestContractors: (id: string) => api.get(API_ENDPOINTS.project.suggestContractors.replace(":id", id))
 };

@@ -21,6 +21,7 @@ const API_ENDPOINTS = {
         getProjects: '/api/v1/projects',
         getProjectById: '/api/v1/projects/:id',
         updateProject: '/api/v1/projects/:id',
+        suggestContractors: '/api/v1/projects/:id/suggest-contractors'
     },
     properties: {
         createProperties: '/api/v1/properties',

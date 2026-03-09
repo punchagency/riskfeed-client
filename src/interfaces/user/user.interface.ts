@@ -1,10 +1,11 @@
+import type { PROJECT_TYPES } from "../project/project.interface";
+
 export const USER_STATUSES = ['pending', 'active', 'suspended'] as const;
 export const ROLES = ['admin', 'user', 'contractor'] as const;
 export const PROPERTY_TYPES = ['single_home', 'condo', 'multi_family', 'commercial'] as const;
 export const OWNERSHIP_TYPES = ['owner', 'renter', 'lessee'] as const;
 export const HEARD_ABOUT_SOURCES = ['online_search', 'google_search', 'friend_family_referral', 'contractor_referral', 'social_media', 'ad', 'other',] as const;
 
-export const CONTRACTOR_SERVICES = ['kitchen_remodeling',  'bathroom_remodeling',  'roofing',  'flooring',  'painting',  'electrical',  'plumbing',  'hvac',  'landscaping',  'deck_patio',  'basement_finishing',  'windows_doors',] as const;
 export const VERIFICATION_STATUSES = ['not_started', 'in_progress', 'verified', 'failed',] as const;
 export const TEAM_SIZE_BUCKETS = ['solo', 'one_to_five', 'six_to_ten', 'eleven_to_twenty-five', 'twenty-five_to_fifty', 'fifty_plus'] as const;
 export const CONTRACTOR_STATUSES = ['pending', 'active', 'suspended', 'deleted'] as const;
@@ -27,25 +28,27 @@ interface IUserProperty {
 }
 
 export interface IUser {
-    _id: string;
-    firstName: string;
-    lastName: string;
-    profilePicture?: string;
-    email: string;
-    phoneNumber: string;
-    address: IUserAddress;
-    notificationPreferences: {
-        emailNotifications: boolean;
-        pushNotifications: boolean;
-        marketingCommunications: boolean;
-    };
-    status: typeof USER_STATUSES[number];
-    role: typeof ROLES[number];
-    ownershipType?: typeof OWNERSHIP_TYPES[number];
-    properties?: IUserProperty[];
-    heardAboutRiskfeed?: {
-        source: typeof HEARD_ABOUT_SOURCES[number];
-        otherDetails?: string;
+    user: {
+        _id: string;
+        firstName: string;
+        lastName: string;
+        profilePicture?: string;
+        email: string;
+        phoneNumber: string;
+        address: IUserAddress;
+        notificationPreferences: {
+            emailNotifications: boolean;
+            pushNotifications: boolean;
+            marketingCommunications: boolean;
+        };
+        status: typeof USER_STATUSES[number];
+        role: typeof ROLES[number];
+        ownershipType?: typeof OWNERSHIP_TYPES[number];
+        properties?: IUserProperty[];
+        heardAboutRiskfeed?: {
+            source: typeof HEARD_ABOUT_SOURCES[number];
+            otherDetails?: string;
+        };
     };
     contractor?: IContractor;
 }
@@ -99,6 +102,7 @@ interface IContractorVerification {
 }
 
 export interface IContractor {
+    _id: string;
     companyName: string;
     businessName?: string;
     licenseNumber: string;
@@ -115,7 +119,7 @@ export interface IContractor {
         state: string;
         country: string;
     };
-    services: typeof CONTRACTOR_SERVICES[number][];
+    services: typeof PROJECT_TYPES[number][];
     serviceAreas: string[];
     teamSize?: typeof TEAM_SIZE_BUCKETS[number];
     isBonded?: boolean;

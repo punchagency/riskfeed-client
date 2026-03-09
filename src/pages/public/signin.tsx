@@ -136,6 +136,13 @@ const Signin = () => {
                     >
                         Create Account
                     </Button>
+
+                    <div className="mt-6 text-center text-xs text-gray-600">
+                        Account not activated?{' '}
+                        <Link to="/activate-account" className="text-primary hover:underline font-medium">
+                            Activate it here
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="mt-6 text-center text-sm text-gray-600">

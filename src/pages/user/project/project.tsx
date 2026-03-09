@@ -10,13 +10,11 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getRiskColor, ProjectItem } from "./components/project-item";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AppPagination } from "@/components/app-pagination";
-import { useReduxAuth } from "@/hooks/use-auth";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { ProjectEmptyState } from "./components/project-empty-state";
 
 const Project: React.FC = () => {
-    const { user } = useReduxAuth();
     const navigate = useNavigate();
     const [filters, setFilters] = React.useState({
         page: 1,
@@ -168,7 +166,6 @@ const Project: React.FC = () => {
                         <ProjectItem
                             key={project._id}
                             project={project}
-                            user={user}
                             onClick={() => navigate(`/projects/${project._id}`)}
                         />
                     ))}

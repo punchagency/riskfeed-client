@@ -35,7 +35,13 @@ interface IProjectInvitation {
 
 export interface IProject {
     _id: string;
-    homeowner: string;
+    homeowner: string | {
+        firstName: string;
+        lastName: string;
+        email: string;
+        phoneNumber: string;
+        profilePicture?: string;
+    };
     title: string;
     description: string;
     projectType: typeof PROJECT_TYPES[number];
@@ -59,4 +65,6 @@ export interface IProject {
     projectDocuments?: string[];
     projectImages?: string[];
     invitations?: IProjectInvitation[];
+    createdAt: Date;
+    isInvited?: boolean
 }

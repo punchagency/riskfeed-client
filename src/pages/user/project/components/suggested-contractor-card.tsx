@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Star, Award, BadgeCheck, Building2 } from 'lucide-react';
 import type { IContractor } from '@/interfaces/user/user.interface';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { getYearsFromNow } from '@/utils/getYearsfromNow';
 
 interface SuggestedContractorCardProps {
     contractor: IContractor;
@@ -64,7 +65,7 @@ export const SuggestedContractorCard: React.FC<SuggestedContractorCardProps> = (
                                 </div>
                                 <div className="flex items-center gap-1.5">
                                     <Award className="size-4" />
-                                    <span>{contractor.yearsInBusiness} years</span>
+                                    <span>{getYearsFromNow(contractor.yearEstablished)} years</span>
                                 </div>
                             </div>
                         </div>
@@ -85,7 +86,7 @@ export const SuggestedContractorCard: React.FC<SuggestedContractorCardProps> = (
                     <div className="bg-primary/5 rounded-lg p-4">
                         <p className="text-xs font-semibold text-primary mb-1">Why this match?</p>
                         <p className="text-sm text-muted-foreground">
-                            Highly rated professional with {contractor.yearsInBusiness}+ years of experience, a {matchPercentage}% match to your project's specific requirements.
+                            Highly rated professional with {getYearsFromNow(contractor.yearEstablished)}+ years of experience, a {matchPercentage}% match to your project's specific requirements.
                         </p>
                     </div>
 

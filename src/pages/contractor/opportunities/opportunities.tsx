@@ -1,26 +1,30 @@
 import React from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { useProjects } from '@/hooks/use-project'
-import type { PROJECT_STATUSES } from '@/interfaces/project/project.interface';
+import { useGetOpportunities } from '@/hooks/use-project'
 import { AppPagination } from '@/components/app-pagination';
+import type { GetOpportunitiesDto } from '@/interfaces/project/dto/get-opportunities.dto';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ProjectItem } from '@/components/project-item';
+import type { IProject } from '@/interfaces/project/project.interface';
 
 const Opportunities: React.FC = () => {
-    const [filters, setFilters] = React.useState({
+    const [filters, setFilters] = React.useState<GetOpportunitiesDto>({
         page: 1,
         limit: 12,
-        status: "published" as typeof PROJECT_STATUSES[number],
-        minBudget: undefined as number | undefined,
-        maxBudget: undefined as number | undefined,
+        maxMatchPercentage: 100,
+        minMatchPercentage: 0,
+        propertyState: undefined,
+        projectType: undefined,
+        propertyType: undefined,
     });
-    const projects = useProjects(filters);
+    const projects = useGetOpportunities(filters);
 
-    console.log(projects.data)
     return (
         <>
             <div className='flex items-center justify-between mb-8'>
-                <div className=''>
-                    <h1 className='font-semibold text-[36px] text-gray-900 dark:text-white mb-0'>Project Opportunities</h1>
-                    <p className='font-normal text-[16px] text-gray-500 dark:text-gray-400'>Find pre-qualified homeowners looking for your services</p>
+                <div>
+                    <h1 className='font-semibold text-[36px] text-foreground mb-0'>Project Opportunities</h1>
+                    <p className='font-normal text-[16px] text-muted-foreground'>Find pre-qualified homeowners looking for your services</p>
                 </div>
 
                 <div>
@@ -38,6 +42,45 @@ const Opportunities: React.FC = () => {
                     </Select>
                 </div>
             </div>
+
+            {projects.isLoading ? (
+                <div className='space-y-4'>
+                    {Array.from({ length: 5 }).map((_, index) => (
+                        <div key={index} className='bg-card border border-border rounded-lg p-6'>
+                            <div className='flex items-start gap-6'>
+                                <Skeleton className='w-[80px] h-[80px] rounded-lg' />
+                                <div className='flex-1 space-y-4'>
+                                    <div>
+                                        <Skeleton className='h-6 w-1/3 mb-2' />
+                                        <Skeleton className='h-4 w-2/3' />
+                                    </div>
+                                    <div className='flex gap-4'>
+                                        <Skeleton className='h-4 w-32' />
+                                        <Skeleton className='h-4 w-32' />
+                                    </div>
+                                    <div className='grid grid-cols-4 gap-4'>
+                                        <Skeleton className='h-12 w-full' />
+                                        <Skeleton className='h-12 w-full' />
+                                        <Skeleton className='h-12 w-full' />
+                                        <Skeleton className='h-12 w-full' />
+                                    </div>
+                                    <div className='flex gap-3'>
+                                        <Skeleton className='h-10 w-40' />
+                                        <Skeleton className='h-10 w-40' />
+                                        <Skeleton className='h-10 w-32' />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ):(
+                <div className='space-y-4'>
+                    {projects.data?.data?.items?.map((project: IProject) => (
+                        <ProjectItem key={project._id} project={project} />
+                    ))}
+                </div>
+            )}
 
             {projects?.data?.data?.pagination?.pages > 1 && (
                 <AppPagination

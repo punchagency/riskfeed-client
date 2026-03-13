@@ -16,6 +16,7 @@ import {
     Sparkles,
 } from 'lucide-react';
 import type { IContractor } from '@/interfaces/user/user.interface';
+import { getYearsFromNow } from '@/utils/getYearsfromNow';
 
 interface ContractorItemProps {
     contractor: IContractor;
@@ -27,7 +28,7 @@ interface ContractorItemProps {
 const getMatchData = (contractor: IContractor) => {
     const base = contractor.riskScore ?? 5;
     const overall = Math.min(98, Math.max(50, Math.round(base * 9.2 + (contractor.completedProjects ?? 0) * 0.3)));
-    const specialty = Math.min(99, Math.max(40, Math.round(base * 8 + (contractor.yearsInBusiness ?? 0) * 1.5)));
+    const specialty = Math.min(99, Math.max(40, Math.round(base * 8 + (getYearsFromNow(contractor.yearEstablished) ?? 0) * 1.5)));
     const budget = Math.min(95, Math.max(35, Math.round(55 + (contractor.completedProjects ?? 0) * 0.7)));
     const availability = Math.min(95, Math.max(25, Math.round(90 - (contractor.activeProjects ?? 0) * 8)));
     const location = Math.min(98, Math.max(40, Math.round(base * 7.5 + 15)));
@@ -72,8 +73,8 @@ export const ContractorItem: React.FC<ContractorItemProps> = ({
     const totalReviews = contractor.ratings?.totalReviews ?? 0;
     const isVerified = contractor.verification?.businessVerificationStatus === 'verified';
     const isInsured = !!contractor.insurance;
-    const city = contractor.businessAddress?.city;
-    const state = contractor.businessAddress?.state;
+    const city = contractor.businessAddresses?.[0]?.city;
+    const state = contractor.businessAddresses?.[0]?.state;
     const locationText = [city, state].filter(Boolean).join(', ');
     const primaryService = contractor.services?.[0]?.replace(/_/g, ' ') ?? '';
 

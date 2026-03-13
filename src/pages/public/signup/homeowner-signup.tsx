@@ -93,12 +93,6 @@ const HomeownerSignup = () => {
             address: data.address,
             role: 'user',
             status: 'pending',
-            ownershipType: data.ownershipType,
-            properties: [{
-                type: data.propertyType,
-                address: data.address,
-                ownershipType: data.ownershipType
-            }],
             heardAboutRiskfeed: data.heardAboutSource ? {
                 source: data.heardAboutSource
             } : undefined
@@ -118,7 +112,6 @@ const HomeownerSignup = () => {
             fields = [
                 'address.street', 'address.city', 
                 'address.state', 'address.zipcode',
-                'propertyType', 'ownershipType'
             ];
         }
 
@@ -130,7 +123,7 @@ const HomeownerSignup = () => {
 
     const steps = [
         { id: 1, title: 'Personal Info', description: 'Your basic details', icon: FaUser },
-        { id: 2, title: 'Property Info', description: 'Address & Type', icon: FaHome },
+        { id: 2, title: 'Address Info', description: 'Address details', icon: FaHome },
         { id: 3, title: 'Finalize', description: 'Review and password', icon: FaCheckCircle },
     ];
 
@@ -234,8 +227,8 @@ const HomeownerSignup = () => {
                             {step === 2 && (
                                 <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
                                     <div className="border-b border-slate-100 pb-4 mb-6">
-                                        <h2 className="text-2xl font-semibold text-slate-800">Property Information</h2>
-                                        <p className="text-slate-500">Tell us about the property you're managing.</p>
+                                        <h2 className="text-2xl font-semibold text-slate-800">Address Information</h2>
+                                        <p className="text-slate-500">Please provide your address.</p>
                                     </div>
                                     
                                     <div className="space-y-6">
@@ -270,45 +263,6 @@ const HomeownerSignup = () => {
                                                 </FormItem>
                                             )} />
                                         </div>
-
-                                        <div className="grid md:grid-cols-2 gap-6 pt-4">
-                                            <FormField control={form.control} name="propertyType" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-secondary-foreground font-semibold">Property Type <span className="text-destructive">*</span></FormLabel>
-                                                    <Select onValueChange={field.onChange} value={field.value}>
-                                                        <FormControl>
-                                                            <SelectTrigger className="h-12 w-full"><SelectValue placeholder="Select type" /></SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            {PROPERTY_TYPES.map(type => (
-                                                                <SelectItem key={type} value={type}>
-                                                                    {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )} />
-                                            <FormField control={form.control} name="ownershipType" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="text-secondary-foreground font-semibold">Ownership Status <span className="text-destructive">*</span></FormLabel>
-                                                    <Select onValueChange={field.onChange} value={field.value}>
-                                                        <FormControl>
-                                                            <SelectTrigger className="h-12 w-full"><SelectValue placeholder="Select status" /></SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent>
-                                                            {OWNERSHIP_TYPES.map(type => (
-                                                                <SelectItem key={type} value={type}>
-                                                                    {type.charAt(0).toUpperCase() + type.slice(1)}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )} />
-                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -335,12 +289,10 @@ const HomeownerSignup = () => {
                                             </div>
                                             <div>
                                                 <h3 className="font-semibold text-primary flex items-center gap-2 mb-3">
-                                                    <FaHome className="text-sm" /> Property Details
+                                                    <FaHome className="text-sm" /> Address Details
                                                 </h3>
                                                 <div className="space-y-1 text-sm text-secondary-foreground">
                                                     <p><span className="font-semibold">Address:</span> {form.getValues('address.street')}, {form.getValues('address.city')}</p>
-                                                    <p><span className="font-semibold">Type:</span> {form.getValues('propertyType')?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
-                                                    <p><span className="font-semibold">Ownership:</span> {form.getValues('ownershipType')?.charAt(0).toUpperCase()}{form.getValues('ownershipType')?.slice(1)}</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -470,7 +422,7 @@ const HomeownerSignup = () => {
                 
                 {/* Support Footer */}
                 <p className="text-center text-secondary-foreground mt-8 text-sm">
-                    Already have an account? <a href="/signin" className="text-primary font-semibold hover:underline">Log in here</a>
+                    Already have an account? <a href="/signin" className="text-primary font-semibold hover:underline">Sign in here</a>
                 </p>
                 <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400">
                     <FaInfoCircle />

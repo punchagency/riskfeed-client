@@ -1,5 +1,5 @@
 import type { PROJECT_TYPES } from "@/interfaces/project/project.interface";
-import type { HEARD_ABOUT_SOURCES, OWNERSHIP_TYPES, PROPERTY_TYPES, ROLES, TEAM_SIZE_BUCKETS, USER_STATUSES } from "../user.interface";
+import type { CORPORATION_TYPES, HEARD_ABOUT_SOURCES, ROLES, TEAM_SIZE_BUCKETS, USER_STATUSES } from "../user.interface";
 
 interface UpdateAddressDto {
   street?: string;
@@ -15,14 +15,6 @@ interface UpdateNotificationPreferencesDto {
   marketingCommunications?: boolean;
 }
 
-interface UpdatePropertyDto {
-  type?: typeof PROPERTY_TYPES[number];
-  name?: string;
-  address?: UpdateAddressDto;
-  ownershipType?: typeof OWNERSHIP_TYPES[number];
-  notes?: string;
-}
-
 interface UpdateHeardAboutDto {
   source?: typeof HEARD_ABOUT_SOURCES[number];
   otherDetails?: string;
@@ -34,18 +26,24 @@ interface UpdateInsuranceDto {
   coverageDetails?: string;
   expiryDate?: Date;
 }
-
+interface LicenseDto {
+  number: string;
+  description: string;
+  state: string;
+}
 interface UpdateContractorDataDto {
   companyName?: string;
   businessName?: string;
-  licenseNumber?: string;
-  yearsInBusiness?: number;
+  licenses?: LicenseDto[];
+  corporationType?: typeof CORPORATION_TYPES[number];
+  yearEstablished?: number;
+  companyLogo?: File;
   taxId?: string;
   ownerName?: string;
   businessEmail?: string;
   businessPhone?: string;
   businessWebsite?: string;
-  businessAddress?: UpdateAddressDto;
+  businessAddresses?: UpdateAddressDto[];
   services?: typeof PROJECT_TYPES[number][];
   serviceAreas?: string[];
   teamSize?: typeof TEAM_SIZE_BUCKETS[number];
@@ -62,8 +60,6 @@ export interface UpdateProfileDto {
   notificationPreferences?: UpdateNotificationPreferencesDto;
   role?: (typeof ROLES)[number];
   status?: (typeof USER_STATUSES)[number];
-  ownershipType?: typeof OWNERSHIP_TYPES[number];
-  properties?: UpdatePropertyDto[];
   heardAboutRiskfeed?: UpdateHeardAboutDto;
   contractorData?: UpdateContractorDataDto;
 }

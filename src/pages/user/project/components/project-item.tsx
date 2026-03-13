@@ -83,7 +83,7 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ project, onClick }) =>
                 </div>
                 <div className="flex flex-col items-end gap-2">
                     <span className={cn('px-3 py-1 rounded-full text-xs font-medium', statusStyle)}>
-                        {project.status === "published" ? "Not Started" : project.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        {project.status === "published" ? "Not Started" : project.status ? project.status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) : ''}
                     </span>
                     {project.riskLevel && (
                         <span className={cn('px-2 py-1 rounded-full text-xs capitalize font-light', riskStyle)}>

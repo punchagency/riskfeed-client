@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { useForm, type FieldPath } from 'react-hook-form';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import React, { useState } from 'react';
+import { useForm, useFieldArray, type FieldPath } from 'react-hook-form';
+import { ImagePlus, X, Plus, Trash2 } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRegister } from '@/hooks/use-auth';
@@ -10,11 +12,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { FaUser, FaBriefcase, FaCheckCircle, FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaCheck } from 'react-icons/fa';
 import Logo from '@/assets/images/logo.png';
-import type { RegisterUserDto } from '@/interfaces/user/dto/register-user.dto';
 import { TEAM_SIZE_BUCKETS } from '@/interfaces/user/user.interface';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
 import { PROJECT_TYPES } from '@/interfaces/project/project.interface';
+import { CORPORATION_TYPES } from '@/interfaces/user/user.interface';
+import { US_STATE_CODES } from '@/constants/us-states';
 
 const contractorSchema = z.object({
     // Step 1: Personal Information
@@ -25,20 +28,25 @@ const contractorSchema = z.object({
     
     // Step 2: Business Information
     companyName: z.string().min(1, 'Business name is required'),
-    licenseNumber: z.string().min(1, 'License number is required'),
+    corporationType: z.enum(CORPORATION_TYPES),
+    licenses: z.array(z.object({
+        number: z.string().min(1, 'License number is required'),
+        description: z.string().min(1, 'Description is required'),
+        state: z.string().min(1, 'State is required')
+    })).min(1, 'At least one license is required'),
     taxId: z.string().min(1, 'Tax ID is required'),
-    yearsInBusiness: z.coerce.number().min(0, 'Years in business must be 0 or greater'),
+    yearEstablished: z.coerce.number().min(1800, 'Invalid year').max(new Date().getFullYear(), 'Year cannot be in the future'),
     businessWebsite: z.string().url('Invalid website URL').optional().or(z.literal('')),
     teamSize: z.enum(TEAM_SIZE_BUCKETS),
     services: z.array(z.enum(PROJECT_TYPES)).min(1, 'Please select at least one service'),
-    businessAddress: z.object({
-        street: z.string().min(1, 'Business street address is required'),
-        city: z.string().min(1, 'Business city is required'),
-        state: z.string().min(1, 'Business state is required').length(2, 'State must be 2 characters (e.g., OR)'),
-        zipcode: z.string().min(1, 'Business ZIP code is required').regex(/^\d{5}(-\d{4})?$/, 'Invalid ZIP code format'),
+    serviceAreas: z.array(z.string()).min(1, 'Please select at least one service area (state)'),
+    businessAddresses: z.array(z.object({
+        street: z.string().min(1, 'Street address is required'),
+        city: z.string().min(1, 'City is required'),
+        state: z.string().min(1, 'State is required').length(2, 'State must be 2 characters (e.g., OR)'),
+        zipcode: z.string().min(1, 'ZIP code is required').regex(/^\d{5}(-\d{4})?$/, 'Invalid ZIP code format'),
         country: z.string()
-    }),
-    
+    })).min(1, 'At least one address is required'),
     // Step 3: Password & Terms
     password: z.string()
         .min(1, 'Password is required')
@@ -56,11 +64,19 @@ const contractorSchema = z.object({
 
 type ContractorFormData = z.infer<typeof contractorSchema>;
 
+
+const UNIQUE_STATES = Array.from(new Set(Object.values(US_STATE_CODES))).map(code => {
+    const name = Object.keys(US_STATE_CODES).find(k => US_STATE_CODES[k] === code)!;
+    return { name, code };
+}).sort((a, b) => a.name.localeCompare(b.name));
+
 const ContractorSignup = () => {
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
     const registerUser = useRegister();
 
     const form = useForm<ContractorFormData>({
@@ -72,49 +88,116 @@ const ContractorSignup = () => {
             email: '',
             phoneNumber: '',
             companyName: '',
-            licenseNumber: '',
+            corporationType: CORPORATION_TYPES[0],
             taxId: '',
-            yearsInBusiness: 0,
+            yearEstablished: new Date().getFullYear(),
+            licenses: [{ number: '', description: '', state: '' }],
             businessWebsite: '',
             teamSize: 'one_to_five',
             services: [],
-            businessAddress: {
+            serviceAreas: [],
+            businessAddresses: [{
                 street: '',
                 city: '',
                 state: '',
                 zipcode: '',
                 country: 'USA'
-            },
+            }],
             password: '',
             confirmPassword: '',
             acceptTerms: false,
         }
     });
 
+    const { fields: licenseFields, append: appendLicense, remove: removeLicense } = useFieldArray({
+        control: form.control,
+        name: "licenses"
+    });
+
+    const { fields: addressFields, append: appendAddress, remove: removeAddress } = useFieldArray({
+        control: form.control,
+        name: "businessAddresses"
+    });
+
     const onSubmit = (data: ContractorFormData) => {
-        const payload: RegisterUserDto = {
+        let payload: any = {
             firstName: data.firstName,
             lastName: data.lastName,
             email: data.email,
             phoneNumber: data.phoneNumber,
             password: data.password,
-            address: data.businessAddress,
+            address: data.businessAddresses[0],
             role: 'contractor',
             status: 'pending',
             contractorData: {
                 companyName: data.companyName,
-                licenseNumber: data.licenseNumber,
+                corporationType: data.corporationType,
+                licenses: data.licenses,
                 taxId: data.taxId,
-                yearsInBusiness: data.yearsInBusiness,
+                yearEstablished: data.yearEstablished,
                 businessEmail: data.email,
                 businessPhone: data.phoneNumber,
                 businessWebsite: data.businessWebsite,
-                businessAddress: data.businessAddress,
+                businessAddresses: data.businessAddresses,
                 services: data.services,
-                serviceAreas: [], // Default or add field if needed
+                serviceAreas: data.serviceAreas,
                 teamSize: data.teamSize
             }
         };
+
+        if (logoFile) {
+            const formData = new FormData();
+            formData.append('firstName', payload.firstName);
+            formData.append('lastName', payload.lastName);
+            formData.append('email', payload.email);
+            formData.append('phoneNumber', payload.phoneNumber);
+            formData.append('password', payload.password);
+            formData.append('role', payload.role);
+            formData.append('status', payload.status);
+            
+            // Append primary address
+            formData.append('address.street', payload.address.street);
+            formData.append('address.city', payload.address.city);
+            formData.append('address.state', payload.address.state);
+            formData.append('address.zipcode', payload.address.zipcode);
+            formData.append('address.country', payload.address.country);
+
+            // ContractorData scalars
+            formData.append('contractorData.companyName', payload.contractorData.companyName);
+            formData.append('contractorData.corporationType', payload.contractorData.corporationType);
+            formData.append('contractorData.taxId', payload.contractorData.taxId);
+            formData.append('contractorData.yearEstablished', payload.contractorData.yearEstablished.toString());
+            formData.append('contractorData.businessEmail', payload.contractorData.businessEmail);
+            formData.append('contractorData.businessPhone', payload.contractorData.businessPhone);
+            if (payload.contractorData.businessWebsite) {
+                formData.append('contractorData.businessWebsite', payload.contractorData.businessWebsite);
+            }
+            formData.append('contractorData.teamSize', payload.contractorData.teamSize);
+
+            // Array objects
+            payload.contractorData.licenses.forEach((license: any, idx: number) => {
+                formData.append(`contractorData.licenses[${idx}].number`, license.number);
+                formData.append(`contractorData.licenses[${idx}].description`, license.description);
+                formData.append(`contractorData.licenses[${idx}].state`, license.state);
+            });
+            
+            payload.contractorData.businessAddresses.forEach((addr: any, idx: number) => {
+                formData.append(`contractorData.businessAddresses[${idx}].street`, addr.street);
+                formData.append(`contractorData.businessAddresses[${idx}].city`, addr.city);
+                formData.append(`contractorData.businessAddresses[${idx}].state`, addr.state);
+                formData.append(`contractorData.businessAddresses[${idx}].zipcode`, addr.zipcode);
+                formData.append(`contractorData.businessAddresses[${idx}].country`, addr.country);
+            });
+
+            payload.contractorData.services.forEach((service: any, idx: number) => {
+                formData.append(`contractorData.services[${idx}]`, service);
+            });
+            formData.append('contractorData.serviceAreas', payload.contractorData.serviceAreas.join(','));
+
+            formData.append('companyLogo', logoFile);
+            payload = formData;
+        }
+
         registerUser.mutate(payload, {
             onSuccess: () => {
                 navigate('/activate-account', { state: { email: data.email } });
@@ -128,10 +211,9 @@ const ContractorSignup = () => {
             fields = ['firstName', 'lastName', 'email', 'phoneNumber'];
         } else if (step === 2) {
             fields = [
-                'companyName', 'licenseNumber', 'taxId', 'yearsInBusiness', 
-                'businessWebsite', 'teamSize', 'services',
-                'businessAddress.street', 'businessAddress.city', 
-                'businessAddress.state', 'businessAddress.zipcode'
+                'companyName', 'licenses', 'taxId', 'yearEstablished', 
+                'businessWebsite', 'teamSize', 'services', 'serviceAreas',
+                'businessAddresses'
             ];
         }
 
@@ -260,14 +342,30 @@ const ContractorSignup = () => {
                                             </FormItem>
                                         )} />
 
-                                        <div className="grid md:grid-cols-2 gap-6">
-                                            <FormField control={form.control} name="licenseNumber" render={({ field }) => (
+                                        <FormField 
+                                            control={form.control}
+                                            name="corporationType"
+                                            render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-secondary-foreground font-semibold">License Number <span className="text-destructive">*</span></FormLabel>
-                                                    <FormControl><Input placeholder="LIC-12345678" className="h-12" {...field} /></FormControl>
+                                                    <FormLabel className="text-secondary-foreground font-semibold">Corporation Type <span className="text-destructive">*</span></FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger className="h-12 w-full">
+                                                                <SelectValue placeholder="Select corporation type" />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {CORPORATION_TYPES.map((type) => (
+                                                                <SelectItem key={type} value={type}>{type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
                                                     <FormMessage />
                                                 </FormItem>
-                                            )} />
+                                            )}
+                                        />
+
+                                        <div className="grid md:grid-cols-2 gap-6">
                                             <FormField control={form.control} name="taxId" render={({ field }) => (
                                                 <FormItem>
                                                     <FormLabel className="text-secondary-foreground font-semibold">Tax ID / EIN <span className="text-destructive">*</span></FormLabel>
@@ -275,19 +373,59 @@ const ContractorSignup = () => {
                                                     <FormMessage />
                                                 </FormItem>
                                             )} />
-                                        </div>
-
-                                        <div className="grid md:grid-cols-2 gap-6">
-                                            <FormField control={form.control} name="yearsInBusiness" render={({ field }) => (
+                                            <FormField control={form.control} name="yearEstablished" render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-secondary-foreground font-semibold">Years in Business <span className="text-destructive">*</span></FormLabel>
-                                                    <FormControl><Input type="number" min="0" className="h-12" {...field} /></FormControl>
+                                                    <FormLabel className="text-secondary-foreground font-semibold">Year Established <span className="text-destructive">*</span></FormLabel>
+                                                    <FormControl><Input type="number" min="1800" max={new Date().getFullYear()} className="h-12" {...field} /></FormControl>
                                                     <FormMessage />
                                                 </FormItem>
                                             )} />
+                                        </div>
+                                        
+                                        <div className="space-y-4 pt-4">
+                                            <div className="flex justify-between items-center">
+                                                <h3 className="font-semibold text-secondary-foreground">Licenses <span className="text-destructive">*</span></h3>
+                                                <Button type="button" variant="outline" size="sm" onClick={() => appendLicense({ number: '', description: '', state: '' })}>
+                                                    <Plus className="mr-2 h-4 w-4" /> Add License
+                                                </Button>
+                                            </div>
+                                            {licenseFields.map((field, index) => (
+                                                <div key={field.id} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-lg relative">
+                                                    {index > 0 && (
+                                                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeLicense(index)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                    <FormField control={form.control} name={`licenses.${index}.number`} render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Number</FormLabel>
+                                                            <FormControl><Input placeholder="LIC-XXX" className="h-12" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )} />
+                                                    <FormField control={form.control} name={`licenses.${index}.description`} render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Description</FormLabel>
+                                                            <FormControl><Input placeholder="General Contractor" className="h-12" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )} />
+                                                    <FormField control={form.control} name={`licenses.${index}.state`} render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>State</FormLabel>
+                                                            <FormControl><Input placeholder="OR" className="h-12" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )} />
+                                                </div>
+                                            ))}
+                                            <p className="text-xs text-destructive">{form.formState.errors.licenses?.root?.message}</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 gap-6">
                                             <FormField control={form.control} name="teamSize" render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="text-secondary-foreground font-semibold">Team Size <span className="text-destructive">*</span></FormLabel>
+                                                    <FormLabel className="text-secondary-foreground font-semibold">Number of Employees <span className="text-destructive">*</span></FormLabel>
                                                     <Select onValueChange={field.onChange} value={field.value}>
                                                         <FormControl>
                                                             <SelectTrigger className="w-full"><SelectValue placeholder="Select size" /></SelectTrigger>
@@ -314,36 +452,96 @@ const ContractorSignup = () => {
                                         )} />
 
                                         <div className="space-y-4 pt-4">
-                                            <h3 className="font-semibold text-secondary-foreground">Business Address</h3>
-                                            <FormField control={form.control} name="businessAddress.street" render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel>Street Address <span className="text-destructive">*</span></FormLabel>
-                                                    <FormControl><Input placeholder="123 Builder Lane" className="h-12" {...field} /></FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )} />
-                                            <div className="grid md:grid-cols-3 gap-4">
-                                                <FormField control={form.control} name="businessAddress.city" render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>City <span className="text-destructive">*</span></FormLabel>
-                                                        <FormControl><Input placeholder="Portland" className="h-12" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )} />
-                                                <FormField control={form.control} name="businessAddress.state" render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>State (2 letters) <span className="text-destructive">*</span></FormLabel>
-                                                        <FormControl><Input placeholder="OR" maxLength={2} className="h-12 uppercase" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )} />
-                                                <FormField control={form.control} name="businessAddress.zipcode" render={({ field }) => (
-                                                    <FormItem>
-                                                        <FormLabel>ZIP Code <span className="text-destructive">*</span></FormLabel>
-                                                        <FormControl><Input placeholder="97201" className="h-12" {...field} /></FormControl>
-                                                        <FormMessage />
-                                                    </FormItem>
-                                                )} />
+                                            <div className="flex justify-between items-center">
+                                                <h3 className="font-semibold text-secondary-foreground">Business Addresses <span className="text-destructive">*</span></h3>
+                                                <Button type="button" variant="outline" size="sm" onClick={() => appendAddress({ street: '', city: '', state: '', zipcode: '', country: 'USA' })}>
+                                                    <Plus className="mr-2 h-4 w-4" /> Add Address
+                                                </Button>
+                                            </div>
+                                            {addressFields.map((field, index) => (
+                                                <div key={field.id} className="p-4 border rounded-lg relative space-y-4">
+                                                    {index > 0 && (
+                                                        <Button type="button" variant="ghost" size="icon" className="absolute top-2 right-2 text-destructive" onClick={() => removeAddress(index)}>
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    )}
+                                                    <FormField control={form.control} name={`businessAddresses.${index}.street`} render={({ field }) => (
+                                                        <FormItem>
+                                                            <FormLabel>Street Address <span className="text-destructive">*</span></FormLabel>
+                                                            <FormControl><Input placeholder="123 Builder Lane" className="h-12" {...field} /></FormControl>
+                                                            <FormMessage />
+                                                        </FormItem>
+                                                    )} />
+                                                    <div className="grid md:grid-cols-3 gap-4">
+                                                        <FormField control={form.control} name={`businessAddresses.${index}.city`} render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel>City <span className="text-destructive">*</span></FormLabel>
+                                                                <FormControl><Input placeholder="Portland" className="h-12" {...field} /></FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name={`businessAddresses.${index}.state`} render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel>State (2 letters) <span className="text-destructive">*</span></FormLabel>
+                                                                <FormControl><Input placeholder="OR" maxLength={2} className="h-12 uppercase" {...field} /></FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )} />
+                                                        <FormField control={form.control} name={`businessAddresses.${index}.zipcode`} render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel>ZIP Code <span className="text-destructive">*</span></FormLabel>
+                                                                <FormControl><Input placeholder="97201" className="h-12" {...field} /></FormControl>
+                                                                <FormMessage />
+                                                            </FormItem>
+                                                        )} />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="pt-4">
+                                            <FormLabel className="text-secondary-foreground font-semibold mb-2 block">Company Logo <span className="text-destructive">*</span></FormLabel>
+                                            <input
+                                                ref={fileInputRef}
+                                                type="file"
+                                                accept="image/*"
+                                                onChange={(e) => {
+                                                    if (e.target.files && e.target.files.length > 0) {
+                                                        setLogoFile(e.target.files[0]);
+                                                    }
+                                                }}
+                                                className="hidden"
+                                            />
+                                            <div
+                                                onClick={() => fileInputRef.current?.click()}
+                                                className="border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer hover:border-primary flex flex-col items-center justify-center bg-slate-50"
+                                            >
+                                                {logoFile ? (
+                                                    <div className="relative group">
+                                                        <img
+                                                            src={URL.createObjectURL(logoFile)}
+                                                            alt={logoFile.name}
+                                                            className="h-20 object-contain rounded-lg"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                setLogoFile(null);
+                                                            }}
+                                                            className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-100 transition-opacity"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                        <p className="text-xs mt-2 truncate text-slate-500">{logoFile.name}</p>
+                                                    </div>
+                                                ) : (
+                                                    <>
+                                                        <ImagePlus className="h-10 w-10 mx-auto mb-2 text-slate-400" />
+                                                        <p className="font-medium text-sm text-slate-700">Click to upload company logo</p>
+                                                        <p className="text-xs text-slate-400">PNG, JPG, up to 5MB</p>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
 
@@ -370,6 +568,52 @@ const ContractorSignup = () => {
                                                             </FormItem>
                                                         )} />
                                                     ))}
+                                                </div>
+                                            </FormItem>
+                                        )} />
+
+                                        <FormField control={form.control} name="serviceAreas" render={({ field }) => (
+                                            <FormItem className="pt-4">
+                                                <FormLabel className="text-secondary-foreground font-semibold">Service Areas (States) <span className="text-destructive">*</span></FormLabel>
+                                                <div className="space-y-3">
+                                                    <Select value="" onValueChange={(val) => {
+                                                        if (!field.value.includes(val)) {
+                                                            field.onChange([...field.value, val]);
+                                                        }
+                                                    }}>
+                                                        <FormControl>
+                                                            <SelectTrigger className="h-12 w-full bg-slate-50 border-slate-200">
+                                                                <SelectValue placeholder="Add a state..." />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent className="max-h-[300px]">
+                                                            {UNIQUE_STATES.map(({ name, code }) => (
+                                                                <SelectItem key={code} value={code} disabled={field.value.includes(code)}>
+                                                                    {name.replace(/\b\w/g, l => l.toUpperCase())} ({code})
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    {field.value.length > 0 && (
+                                                        <div className="flex flex-wrap gap-2 mt-3">
+                                                            {field.value.map((code) => {
+                                                                const stateObj = UNIQUE_STATES.find(s => s.code === code);
+                                                                const stateName = stateObj ? stateObj.name : code;
+                                                                return (
+                                                                    <div key={code} className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-sm font-medium animate-in fade-in zoom-in duration-200">
+                                                                        <span>{stateName.replace(/\b\w/g, l => l.toUpperCase())}</span>
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => field.onChange(field.value.filter((c) => c !== code))}
+                                                                            className="hover:bg-primary/20 rounded-full p-0.5 transition-colors text-primary/70 hover:text-primary"
+                                                                        >
+                                                                            <X className="h-3.5 w-3.5" />
+                                                                        </button>
+                                                                    </div>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    )}
                                                 </div>
                                                 <FormMessage />
                                             </FormItem>
@@ -404,7 +648,7 @@ const ContractorSignup = () => {
                                                 </h3>
                                                 <div className="space-y-1 text-sm text-secondary-foreground">
                                                     <p><span className="font-semibold">Company:</span> {form.getValues('companyName')}</p>
-                                                    <p><span className="font-semibold">Address:</span> {form.getValues('businessAddress.street')}, {form.getValues('businessAddress.city')}</p>
+                                                    <p><span className="font-semibold">Address:</span> {form.getValues('businessAddresses')[0]?.street}, {form.getValues('businessAddresses')[0]?.city}</p>
                                                     <p><span className="font-semibold">Services:</span> {form.getValues('services').length} Selected</p>
                                                 </div>
                                             </div>
@@ -516,7 +760,7 @@ const ContractorSignup = () => {
                 
                 {/* Support Footer */}
                 <p className="text-center text-secondary-foreground mt-8 text-sm">
-                    Already have an account? <a href="/login" className="text-primary font-semibold hover:underline">Log in here</a>
+                    Already have an account? <a href="/login" className="text-primary font-semibold hover:underline">Sign in here</a>
                 </p>
             </div>
         </div>

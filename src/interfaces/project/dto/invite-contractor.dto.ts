@@ -1,4 +1,5 @@
 export interface InviteContractorDto {
-  contractorId: string;
+  contractorId?: string;
   message?: string;
+  contractorEmail?: string;
 }

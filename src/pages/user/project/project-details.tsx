@@ -4,12 +4,13 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useProjectById, useSuggestContractors } from '@/hooks/use-project'
 import type { IProject } from '@/interfaces/project/project.interface'
 import { Badge } from '@/components/ui/badge'
-import { TriangleAlert } from 'lucide-react'
+import { Edit, TriangleAlert } from 'lucide-react'
 import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import type { IContractor } from '@/interfaces/user/user.interface'
 import { SuggestedContractorCard } from './components/suggested-contractor-card'
 import { SuggestedContractorsEmptyState } from './components/suggested-contractors-empty-state'
+import { Button } from '@/components/ui/button'
 
 const ProjectDetails: React.FC = () => {
     const navigate = useNavigate();
@@ -66,7 +67,7 @@ const ProjectDetails: React.FC = () => {
                 </>
             ) : (
                 <>
-                    <div className='flex items-center justify-between mb-8'>
+                    <div className='flex flex-col md:flex-row items-start justify-between mb-8'>
                         <div className=''>
                             <h1 className='font-semibold text-[36px] text-gray-900 dark:text-white mb-0'>{project?.title || "Project Details"}</h1>
                             <p className='font-normal text-[16px] text-gray-500 dark:text-gray-400'>{project ? `${project?.property?.address.street}, ${project?.property?.address.city}, ${project?.property?.address.state}` : ""}</p>
@@ -75,6 +76,12 @@ const ProjectDetails: React.FC = () => {
                                     <TriangleAlert className='size-5' />
                                     No Contractor Assigned</Badge>
                             )}
+                        </div>
+                        <div>
+                            <Button onClick={() => navigate(`/projects/${id}/edit`)}>
+                                <Edit className='size-5' />
+                                Edit Project
+                            </Button>
                         </div>
                     </div>
 
@@ -161,6 +168,7 @@ const ProjectDetails: React.FC = () => {
             </div>
 
 
+            <Button className='w-full h-12 mt-6' onClick={() => navigate(`/projects/${project?._id}/invite-your-contractor`, { state: project })}>Invite Your Own Contractor</Button>
         </>
     )
 }

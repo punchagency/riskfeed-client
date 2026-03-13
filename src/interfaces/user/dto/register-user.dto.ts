@@ -1,5 +1,5 @@
 import type { PROJECT_TYPES } from "@/interfaces/project/project.interface";
-import type { HEARD_ABOUT_SOURCES, OWNERSHIP_TYPES, PROPERTY_TYPES, ROLES, TEAM_SIZE_BUCKETS, USER_STATUSES } from "../user.interface";
+import type { CORPORATION_TYPES, HEARD_ABOUT_SOURCES, ROLES, TEAM_SIZE_BUCKETS, USER_STATUSES } from "../user.interface";
 
 interface AddressDto {
   street: string;
@@ -9,18 +9,16 @@ interface AddressDto {
   country: string;
 }
 
+interface LicenseDto {
+  number: string;
+  description: string;
+  state: string;
+}
+
 interface NotificationPreferencesDto {
   emailNotifications?: boolean;
   pushNotifications?: boolean;
   marketingCommunications?: boolean;
-}
-
-interface PropertyDto {
-  type: typeof PROPERTY_TYPES[number];
-  name?: string;
-  address: AddressDto;
-  ownershipType?: typeof OWNERSHIP_TYPES[number];
-  notes?: string;
 }
 
 interface HeardAboutDto {
@@ -38,14 +36,16 @@ interface InsuranceDto {
 interface ContractorDataDto {
   companyName: string;
   businessName?: string;
-  licenseNumber: string;
-  yearsInBusiness: number;
+  licenses: LicenseDto[];
+  corporationType: typeof CORPORATION_TYPES[number];
+  yearEstablished: number;
+  companyLogo: File;
   taxId: string;
   ownerName?: string;
   businessEmail: string;
   businessPhone: string;
   businessWebsite?: string;
-  businessAddress: AddressDto;
+  businessAddresses: AddressDto[];
   services: typeof PROJECT_TYPES[number][];
   serviceAreas: string[];
   teamSize?: typeof TEAM_SIZE_BUCKETS[number];
@@ -63,8 +63,6 @@ export interface RegisterUserDto {
   notificationPreferences?: NotificationPreferencesDto;
   role?: (typeof ROLES)[number];
   status?: (typeof USER_STATUSES)[number];
-  ownershipType?: typeof OWNERSHIP_TYPES[number];
-  properties?: PropertyDto[];
   heardAboutRiskfeed?: HeardAboutDto;
   contractorData?: ContractorDataDto;
 }

@@ -75,7 +75,6 @@ const projectSchema = z.object({
 });
 
 const CreateProject = () => {
-
     const [step, setStep] = useState(1);
     const [projectImages, setProjectImages] = useState<File[]>([]);
     const [projectDocuments, setProjectDocuments] = useState<File[]>([]);

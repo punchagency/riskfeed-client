@@ -20,6 +20,7 @@ import { useGetContractorById } from '@/hooks/use-contractor';
 import { useInviteContractor, useProjects } from '@/hooks/use-project';
 import type { IProject } from '@/interfaces/project/project.interface';
 import type { IContractor } from '@/interfaces/user/user.interface';
+import { getYearsFromNow } from '@/utils/getYearsfromNow';
 
 const inviteSchema = z.object({
     projectId: z.string().min(1, 'Please select a project'),
@@ -83,7 +84,7 @@ const ContractorProfileCard = ({ contractor }: { contractor: IContractor }) => (
                         )}
                         <div className="flex items-center gap-1 text-sm text-muted-foreground">
                             <Building2 className="h-4 w-4" />
-                            <span>{contractor.yearsInBusiness} yrs in business</span>
+                            <span>{getYearsFromNow(contractor.yearEstablished)} yrs in business</span>
                         </div>
                     </div>
                 </div>
@@ -176,8 +177,8 @@ const Invite: React.FC = () => {
     return (
         <>
             <PageBackButton
-                text="Back to Contractors"
-                onClick={() => navigate('/contractors')}
+                text="Back"
+                onClick={() => navigate(-1)}
             />
             <PageHeader
                 title="Invite Contractor to Project"

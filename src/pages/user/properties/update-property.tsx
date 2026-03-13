@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { PageBackButton } from '@/components/page-back-button';
@@ -57,8 +57,8 @@ const UpdateProperty = () => {
         mode: 'onChange',
         defaultValues: {
             name: '',
-            propertyType: '',
-            status: 'active',
+            propertyType: propertyData ? propertyData.propertyType : '',
+            status: propertyData ? propertyData.status : 'active',
             street: '',
             city: '',
             state: '',
@@ -81,7 +81,7 @@ const UpdateProperty = () => {
     });
 
     useEffect(() => {
-        if (property) {
+        if (propertyData) {
             form.reset({
                 name: propertyData?.name || '',
                 propertyType: propertyData?.propertyType || '',
@@ -128,6 +128,8 @@ const UpdateProperty = () => {
         }
     };
 
+    const propertyTypeValue = useWatch({ control: form.control, name: 'propertyType' });
+    const statusValue = useWatch({ control: form.control, name: 'status' });
     const onSubmit = (data: z.infer<typeof propertySchema>) => {
         const payload: UpdatePropertyDto = {
             name: data.name,
@@ -211,12 +213,7 @@ const UpdateProperty = () => {
     if (property.isLoading) {
         return (
             <>
-                <PageBackButton text='Back to Properties' onClick={() => navigate('/properties')} />
-                <div className="space-y-4">
-                    <Skeleton className="h-12 w-64" />
-                    <Skeleton className="h-6 w-96" />
-                    <Skeleton className="h-96 w-full" />
-                </div>
+
             </>
         );
     }
@@ -231,598 +228,617 @@ const UpdateProperty = () => {
                 title="Update Property"
                 description="Update your property details and manage it with AI-powered insights"
             />
-
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                            1
-                        </div>
-                        <div>
-                            <p className="text-sm text-foreground font-semibold">Basic Information</p>
-                            <p className="text-xs">Property name, type, and location</p>
-                        </div>
+            {property.isLoading ? (
+                <>
+                    <div className="space-y-4">
+                        <Skeleton className="h-12 w-64" />
+                        <Skeleton className="h-6 w-96" />
+                        <Skeleton className="h-96 w-full" />
                     </div>
-                </div>
-
-                <div className="h-px flex-1 mx-4 bg-secondary" />
-
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                            2
-                        </div>
-                        <div>
-                            <p className="text-sm text-foreground font-semibold">Financial Details</p>
-                            <p className="text-xs">Purchase price, taxes, and expenses</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="h-px flex-1 mx-4 bg-secondary" />
-
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 3 ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                            3
-                        </div>
-                        <div>
-                            <p className="text-sm text-foreground font-semibold">Property Details</p>
-                            <p className="text-xs">Size, rooms, and features</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="h-px flex-1 mx-4 bg-secondary" />
-
-                <div className="flex items-center gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 3 ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-                            4
-                        </div>
-                        <div>
-                            <p className="text-sm text-foreground font-semibold">Photos & Review</p>
-                            <p className="text-xs">Upload images and confirm details</p>
-                        </div>
-                    </div>
-                </div>
-
-
-            </div>
-
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)}>
-                    {step === 1 && (
-                        <div className="backdrop-blur-sm rounded-2xl p-8 border">
-                            <div className="mb-6">
-                                <h2 className="text-2xl text-foreground font-bold mb-2">Basic Information</h2>
-                                <p className="text-muted-foreground">Property name, type, and location</p>
+                </>
+            ) : (
+                <>
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 1 ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                    1
+                                </div>
+                                <div>
+                                    <p className="text-sm text-foreground font-semibold">Basic Information</p>
+                                    <p className="text-xs">Property name, type, and location</p>
+                                </div>
                             </div>
+                        </div>
 
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="name"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Property Name <span className='text-destructive'>*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="Enter property name" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                        <div className="h-px flex-1 mx-4 bg-secondary" />
 
-                                    <FormField
-                                        control={form.control}
-                                        name="propertyType"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Property Type <span className='text-destructive'>*</span></FormLabel>
-                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 2 ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                    2
+                                </div>
+                                <div>
+                                    <p className="text-sm text-foreground font-semibold">Financial Details</p>
+                                    <p className="text-xs">Purchase price, taxes, and expenses</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="h-px flex-1 mx-4 bg-secondary" />
+
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 3 ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                    3
+                                </div>
+                                <div>
+                                    <p className="text-sm text-foreground font-semibold">Property Details</p>
+                                    <p className="text-xs">Size, rooms, and features</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="h-px flex-1 mx-4 bg-secondary" />
+
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-3">
+                                <div className={`flex items-center justify-center w-10 h-10 rounded-full ${step >= 3 ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+                                    4
+                                </div>
+                                <div>
+                                    <p className="text-sm text-foreground font-semibold">Photos & Review</p>
+                                    <p className="text-xs">Upload images and confirm details</p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)}>
+                            {step === 1 && (
+                                <div className="backdrop-blur-sm rounded-2xl p-8 border">
+                                    <div className="mb-6">
+                                        <h2 className="text-2xl text-foreground font-bold mb-2">Basic Information</h2>
+                                        <p className="text-muted-foreground">Property name, type, and location</p>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <FormField
+                                                control={form.control}
+                                                name="name"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Property Name <span className='text-destructive'>*</span></FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} placeholder="Enter property name" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="propertyType"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Property Type <span className='text-destructive'>*</span></FormLabel>
+                                                        <Select onValueChange={field.onChange} value={propertyTypeValue}>
+                                                            <FormControl>
+                                                                <SelectTrigger className='w-full'>
+                                                                    <SelectValue placeholder="Select property type">
+                                                                        {propertyTypeValue
+                                                                            ? propertyTypeValue.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                                                                            : ''}
+                                                                    </SelectValue>
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent>
+                                                                {PROPERTIES_TYPES.map(type => (
+                                                                    <SelectItem key={type} value={type}>
+                                                                        {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+
+                                        <FormField
+                                            control={form.control}
+                                            name="status"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Status</FormLabel>
+                                                    <Select onValueChange={field.onChange} value={statusValue}>
+                                                        <FormControl>
+                                                            <SelectTrigger className='w-full'>
+                                                                <SelectValue placeholder="Select status">
+                                                                    {statusValue
+                                                                        ? statusValue.charAt(0).toUpperCase() + statusValue.slice(1)
+                                                                        : ''}
+                                                                </SelectValue>
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent>
+                                                            {PROPERTY_STATUS.map(status => (
+                                                                <SelectItem key={status} value={status}>
+                                                                    {status.charAt(0).toUpperCase() + status.slice(1)}
+                                                                </SelectItem>
+                                                            ))}
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField
+                                            control={form.control}
+                                            name="street"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Street Address <span className='text-destructive'>*</span></FormLabel>
                                                     <FormControl>
-                                                        <SelectTrigger className='w-full'>
-                                                            <SelectValue placeholder="Select property type" />
-                                                        </SelectTrigger>
+                                                        <Input {...field} placeholder="Enter street address" />
                                                     </FormControl>
-                                                    <SelectContent>
-                                                        {PROPERTIES_TYPES.map(type => (
-                                                            <SelectItem key={type} value={type}>
-                                                                {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                            </SelectItem>
-                                                        ))}
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
 
-                                <FormField
-                                    control={form.control}
-                                    name="status"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Status</FormLabel>
-                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger className='w-full'>
-                                                        <SelectValue placeholder="Select status" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    {PROPERTY_STATUS.map(status => (
-                                                        <SelectItem key={status} value={status}>
-                                                            {status.charAt(0).toUpperCase() + status.slice(1)}
-                                                        </SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <FormField
+                                                control={form.control}
+                                                name="city"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>City <span className='text-destructive'>*</span></FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} placeholder="Enter city" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
 
-                                <FormField
-                                    control={form.control}
-                                    name="street"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Street Address <span className='text-destructive'>*</span></FormLabel>
-                                            <FormControl>
-                                                <Input {...field} placeholder="Enter street address" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                            <FormField
+                                                control={form.control}
+                                                name="state"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>State <span className='text-destructive'>*</span></FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} placeholder="Enter state" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
 
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="city"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>City <span className='text-destructive'>*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="Enter city" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <FormField
+                                                control={form.control}
+                                                name="zipCode"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Zip Code <span className='text-destructive'>*</span></FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} placeholder="Enter zip code" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
 
-                                    <FormField
-                                        control={form.control}
-                                        name="state"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>State <span className='text-destructive'>*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="Enter state" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="zipCode"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Zip Code <span className='text-destructive'>*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="Enter zip code" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="country"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Country <span className='text-destructive'>*</span></FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="Enter country" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between pt-6">
-                                <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
-                                    Cancel
-                                </Button>
-                                <Button type="button" onClick={() => handleNextStep(2)}>
-                                    Next Step
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 2 && (
-                        <div className="backdrop-blur-sm rounded-2xl p-8 border">
-                            <div className="mb-6">
-                                <h2 className="text-2xl text-foreground font-bold mb-2">Financial Details</h2>
-                                <p className="text-muted-foreground">Purchase price, taxes, and expenses</p>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="purchaseDate"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Purchase Date</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="date" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="purchasePrice"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Purchase Price ($)</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 500000" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="estimatedValue"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Estimated Value ($)</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 550000" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="currentEstimatedValue"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Current Estimated Value ($)</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 575000" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-3 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="annualPropertyTax"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Annual Property Tax ($)</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 8000" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="annualInsurance"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Annual Insurance ($)</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 2000" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="annualMaintenanceCosts"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Annual Maintenance ($)</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 3000" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex justify-between pt-6">
-                                <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
-                                    Cancel
-                                </Button>
-                                <div className='flex gap-4 items-center'>
-                                    <Button type="button" variant="outline" onClick={() => setStep(1)}>
-                                        Previous Step
-                                    </Button>
-                                    <Button type="button" onClick={() => handleNextStep(3)}>
-                                        Next Step
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 3 && (
-                        <div className="backdrop-blur-sm rounded-2xl p-8 border">
-                            <div className="mb-6">
-                                <h2 className="text-2xl text-foreground font-bold mb-2">Property Details</h2>
-                                <p className="text-muted-foreground">Size, rooms, and features</p>
-                            </div>
-
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="squareFeet"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Square Feet</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 2500" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="yearBuilt"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Year Built</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 2010" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-3 gap-6">
-                                    <FormField
-                                        control={form.control}
-                                        name="noOfBedrooms"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Bedrooms</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 4" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="noOfBathrooms"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Bathrooms</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} type="number" placeholder="e.g., 3" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="lotSize"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel>Lot Size</FormLabel>
-                                                <FormControl>
-                                                    <Input {...field} placeholder="e.g., 0.25 acres" />
-                                                </FormControl>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-                                </div>
-
-                                <FormField
-                                    control={form.control}
-                                    name="notes"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Notes</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} placeholder="Additional notes about the property" rows={4} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-
-                            <div className="flex justify-between pt-6">
-                                <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
-                                    Cancel
-                                </Button>
-                                <div className='flex gap-4 items-center'>
-                                    <Button type="button" variant="outline" onClick={() => setStep(2)}>
-                                        Previous Step
-                                    </Button>
-                                    <Button type="button" onClick={() => handleNextStep(4)}>
-                                        Next Step
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {step === 4 && (
-                        <div className="backdrop-blur-sm rounded-2xl p-8 border">
-                            <div className="mb-6">
-                                <h2 className="text-2xl text-foreground font-bold mb-2">Photos & Review</h2>
-                                <p className="text-muted-foreground">Upload images and review your property details before submission</p>
-                            </div>
-
-                            <div className="mb-6">
-                                <FormLabel className="mb-2 block">Property Images</FormLabel>
-                                <p className="text-sm text-muted-foreground mb-4">Upload photos of the property</p>
-                                <input
-                                    ref={imageInputRef}
-                                    type="file"
-                                    accept="image/*"
-                                    multiple
-                                    onChange={handleImageUpload}
-                                    className="hidden"
-                                />
-
-                                {propertyData?.images && propertyData.images.length > 0 && (
-                                    <div className="mb-4">
-                                        <p className="text-sm font-medium mb-2">Existing Images</p>
-                                        <div className="grid grid-cols-4 gap-4">
-                                            {propertyData.images.filter((img: string) => !imagesToRemove.includes(img)).map((imageUrl: string, index: number) => (
-                                                <div key={index} className="relative group">
-                                                    <img
-                                                        src={imageUrl}
-                                                        alt={`Property ${index + 1}`}
-                                                        className="w-full h-24 object-cover rounded-lg"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => removeExistingImage(imageUrl)}
-                                                        className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                    >
-                                                        <X className="h-4 w-4" />
-                                                    </button>
-                                                </div>
-                                            ))}
+                                            <FormField
+                                                control={form.control}
+                                                name="country"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Country <span className='text-destructive'>*</span></FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} placeholder="Enter country" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
                                         </div>
                                     </div>
-                                )}
 
-                                <div
-                                    onClick={() => imageInputRef.current?.click()}
-                                    className="border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer hover:border-primary"
-                                >
-                                    <ImagePlus className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                                    <p className="font-medium mb-1">Click to upload images</p>
-                                    <p className="text-sm text-muted-foreground">PNG, JPG, HEIC up to 10MB each</p>
+                                    <div className="flex justify-between pt-6">
+                                        <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                                            Cancel
+                                        </Button>
+                                        <Button type="button" onClick={() => handleNextStep(2)}>
+                                            Next Step
+                                        </Button>
+                                    </div>
                                 </div>
-                                {propertyImages.length > 0 && (
-                                    <div className="mt-4 grid grid-cols-4 gap-4">
-                                        {propertyImages.map((file, index) => (
-                                            <div key={index} className="relative group">
-                                                <img
-                                                    src={URL.createObjectURL(file)}
-                                                    alt={file.name}
-                                                    className="w-full h-24 object-cover rounded-lg"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => removeImage(index)}
-                                                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
-                                                <p className="text-xs mt-1 truncate">{file.name}</p>
+                            )}
+
+                            {step === 2 && (
+                                <div className="backdrop-blur-sm rounded-2xl p-8 border">
+                                    <div className="mb-6">
+                                        <h2 className="text-2xl text-foreground font-bold mb-2">Financial Details</h2>
+                                        <p className="text-muted-foreground">Purchase price, taxes, and expenses</p>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <FormField
+                                                control={form.control}
+                                                name="purchaseDate"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Purchase Date</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="date" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="purchasePrice"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Purchase Price ($)</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 500000" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <FormField
+                                                control={form.control}
+                                                name="estimatedValue"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Estimated Value ($)</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 550000" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="currentEstimatedValue"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Current Estimated Value ($)</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 575000" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-6">
+                                            <FormField
+                                                control={form.control}
+                                                name="annualPropertyTax"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Annual Property Tax ($)</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 8000" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="annualInsurance"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Annual Insurance ($)</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 2000" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="annualMaintenanceCosts"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Annual Maintenance ($)</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 3000" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between pt-6">
+                                        <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                                            Cancel
+                                        </Button>
+                                        <div className='flex gap-4 items-center'>
+                                            <Button type="button" variant="outline" onClick={() => setStep(1)}>
+                                                Previous Step
+                                            </Button>
+                                            <Button type="button" onClick={() => handleNextStep(3)}>
+                                                Next Step
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {step === 3 && (
+                                <div className="backdrop-blur-sm rounded-2xl p-8 border">
+                                    <div className="mb-6">
+                                        <h2 className="text-2xl text-foreground font-bold mb-2">Property Details</h2>
+                                        <p className="text-muted-foreground">Size, rooms, and features</p>
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="grid grid-cols-2 gap-6">
+                                            <FormField
+                                                control={form.control}
+                                                name="squareFeet"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Square Feet</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 2500" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="yearBuilt"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Year Built</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 2010" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-6">
+                                            <FormField
+                                                control={form.control}
+                                                name="noOfBedrooms"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Bedrooms</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 4" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="noOfBathrooms"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Bathrooms</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} type="number" placeholder="e.g., 3" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+
+                                            <FormField
+                                                control={form.control}
+                                                name="lotSize"
+                                                render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel>Lot Size</FormLabel>
+                                                        <FormControl>
+                                                            <Input {...field} placeholder="e.g., 0.25 acres" />
+                                                        </FormControl>
+                                                        <FormMessage />
+                                                    </FormItem>
+                                                )}
+                                            />
+                                        </div>
+
+                                        <FormField
+                                            control={form.control}
+                                            name="notes"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Notes</FormLabel>
+                                                    <FormControl>
+                                                        <Textarea {...field} placeholder="Additional notes about the property" rows={4} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
+
+                                    <div className="flex justify-between pt-6">
+                                        <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                                            Cancel
+                                        </Button>
+                                        <div className='flex gap-4 items-center'>
+                                            <Button type="button" variant="outline" onClick={() => setStep(2)}>
+                                                Previous Step
+                                            </Button>
+                                            <Button type="button" onClick={() => handleNextStep(4)}>
+                                                Next Step
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {step === 4 && (
+                                <div className="backdrop-blur-sm rounded-2xl p-8 border">
+                                    <div className="mb-6">
+                                        <h2 className="text-2xl text-foreground font-bold mb-2">Photos & Review</h2>
+                                        <p className="text-muted-foreground">Upload images and review your property details before submission</p>
+                                    </div>
+
+                                    <div className="mb-6">
+                                        <FormLabel className="mb-2 block">Property Images</FormLabel>
+                                        <p className="text-sm text-muted-foreground mb-4">Upload photos of the property</p>
+                                        <input
+                                            ref={imageInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            onChange={handleImageUpload}
+                                            className="hidden"
+                                        />
+
+                                        {propertyData?.images && propertyData.images.length > 0 && (
+                                            <div className="mb-4">
+                                                <p className="text-sm font-medium mb-2">Existing Images</p>
+                                                <div className="grid grid-cols-4 gap-4">
+                                                    {propertyData.images.filter((img: string) => !imagesToRemove.includes(img)).map((imageUrl: string, index: number) => (
+                                                        <div key={index} className="relative group">
+                                                            <img
+                                                                src={imageUrl}
+                                                                alt={`Property ${index + 1}`}
+                                                                className="w-full h-24 object-cover rounded-lg"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeExistingImage(imageUrl)}
+                                                                className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            >
+                                                                <X className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                                        )}
 
-                            <div className="space-y-6">
-                                <div className="rounded-lg border p-4">
-                                    <h3 className="font-semibold mb-3">Basic Information</h3>
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div><span className="text-muted-foreground">Name:</span> {form.getValues('name')}</div>
-                                        <div><span className="text-muted-foreground">Type:</span> {form.getValues('propertyType').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
-                                        <div><span className="text-muted-foreground">Status:</span> {form.getValues('status')?.charAt(0).toUpperCase()}{form.getValues('status')?.slice(1)}</div>
-                                        <div className="col-span-2"><span className="text-muted-foreground">Address:</span> {form.getValues('street')}, {form.getValues('city')}, {form.getValues('state')} {form.getValues('zipCode')}, {form.getValues('country')}</div>
-                                    </div>
-                                </div>
-
-                                <div className="rounded-lg border p-4">
-                                    <h3 className="font-semibold mb-3">Financial Details</h3>
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div><span className="text-muted-foreground">Purchase Date:</span> {form.getValues('purchaseDate') || 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Purchase Price:</span> {form.getValues('purchasePrice') ? `$${form.getValues('purchasePrice')}` : 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Estimated Value:</span> {form.getValues('estimatedValue') ? `$${form.getValues('estimatedValue')}` : 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Current Value:</span> {form.getValues('currentEstimatedValue') ? `$${form.getValues('currentEstimatedValue')}` : 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Annual Tax:</span> {form.getValues('annualPropertyTax') ? `$${form.getValues('annualPropertyTax')}` : 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Annual Insurance:</span> {form.getValues('annualInsurance') ? `$${form.getValues('annualInsurance')}` : 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Annual Maintenance:</span> {form.getValues('annualMaintenanceCosts') ? `$${form.getValues('annualMaintenanceCosts')}` : 'N/A'}</div>
-                                    </div>
-                                </div>
-
-                                <div className="rounded-lg border p-4">
-                                    <h3 className="font-semibold mb-3">Property Details</h3>
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div><span className="text-muted-foreground">Square Feet:</span> {form.getValues('squareFeet') || 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Year Built:</span> {form.getValues('yearBuilt') || 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Bedrooms:</span> {form.getValues('noOfBedrooms') || 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Bathrooms:</span> {form.getValues('noOfBathrooms') || 'N/A'}</div>
-                                        <div><span className="text-muted-foreground">Lot Size:</span> {form.getValues('lotSize') || 'N/A'}</div>
-                                        {form.getValues('notes') && (
-                                            <div className="col-span-2"><span className="text-muted-foreground">Notes:</span> {form.getValues('notes')}</div>
+                                        <div
+                                            onClick={() => imageInputRef.current?.click()}
+                                            className="border-2 border-dashed rounded-xl p-12 text-center transition-colors cursor-pointer hover:border-primary"
+                                        >
+                                            <ImagePlus className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                            <p className="font-medium mb-1">Click to upload images</p>
+                                            <p className="text-sm text-muted-foreground">PNG, JPG, HEIC up to 10MB each</p>
+                                        </div>
+                                        {propertyImages.length > 0 && (
+                                            <div className="mt-4 grid grid-cols-4 gap-4">
+                                                {propertyImages.map((file, index) => (
+                                                    <div key={index} className="relative group">
+                                                        <img
+                                                            src={URL.createObjectURL(file)}
+                                                            alt={file.name}
+                                                            className="w-full h-24 object-cover rounded-lg"
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeImage(index)}
+                                                            className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                        <p className="text-xs mt-1 truncate">{file.name}</p>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         )}
                                     </div>
-                                </div>
-                            </div>
 
-                            <div className="flex justify-between pt-6">
-                                <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
-                                    Cancel
-                                </Button>
-                                <div className='flex gap-4 items-center'>
-                                    <Button type="button" variant="outline" onClick={() => setStep(3)}>
-                                        Previous Step
-                                    </Button>
-                                    <Button type="submit" disabled={updateProperty.isPending}>
-                                        {updateProperty.isPending ? 'Updating...' : 'Update Property'}
-                                    </Button>
+                                    <div className="space-y-6">
+                                        <div className="rounded-lg border p-4">
+                                            <h3 className="font-semibold mb-3">Basic Information</h3>
+                                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                                <div><span className="text-muted-foreground">Name:</span> {form.getValues('name')}</div>
+                                                <div><span className="text-muted-foreground">Type:</span> {form.getValues('propertyType').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</div>
+                                                <div><span className="text-muted-foreground">Status:</span> {form.getValues('status')?.charAt(0).toUpperCase()}{form.getValues('status')?.slice(1)}</div>
+                                                <div className="col-span-2"><span className="text-muted-foreground">Address:</span> {form.getValues('street')}, {form.getValues('city')}, {form.getValues('state')} {form.getValues('zipCode')}, {form.getValues('country')}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-lg border p-4">
+                                            <h3 className="font-semibold mb-3">Financial Details</h3>
+                                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                                <div><span className="text-muted-foreground">Purchase Date:</span> {form.getValues('purchaseDate') || 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Purchase Price:</span> {form.getValues('purchasePrice') ? `$${form.getValues('purchasePrice')}` : 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Estimated Value:</span> {form.getValues('estimatedValue') ? `$${form.getValues('estimatedValue')}` : 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Current Value:</span> {form.getValues('currentEstimatedValue') ? `$${form.getValues('currentEstimatedValue')}` : 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Annual Tax:</span> {form.getValues('annualPropertyTax') ? `$${form.getValues('annualPropertyTax')}` : 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Annual Insurance:</span> {form.getValues('annualInsurance') ? `$${form.getValues('annualInsurance')}` : 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Annual Maintenance:</span> {form.getValues('annualMaintenanceCosts') ? `$${form.getValues('annualMaintenanceCosts')}` : 'N/A'}</div>
+                                            </div>
+                                        </div>
+
+                                        <div className="rounded-lg border p-4">
+                                            <h3 className="font-semibold mb-3">Property Details</h3>
+                                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                                <div><span className="text-muted-foreground">Square Feet:</span> {form.getValues('squareFeet') || 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Year Built:</span> {form.getValues('yearBuilt') || 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Bedrooms:</span> {form.getValues('noOfBedrooms') || 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Bathrooms:</span> {form.getValues('noOfBathrooms') || 'N/A'}</div>
+                                                <div><span className="text-muted-foreground">Lot Size:</span> {form.getValues('lotSize') || 'N/A'}</div>
+                                                {form.getValues('notes') && (
+                                                    <div className="col-span-2"><span className="text-muted-foreground">Notes:</span> {form.getValues('notes')}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-between pt-6">
+                                        <Button type="button" variant="outline" onClick={() => navigate('/properties')}>
+                                            Cancel
+                                        </Button>
+                                        <div className='flex gap-4 items-center'>
+                                            <Button type="button" variant="outline" onClick={() => setStep(3)}>
+                                                Previous Step
+                                            </Button>
+                                            <Button type="submit" disabled={updateProperty.isPending}>
+                                                {updateProperty.isPending ? 'Updating...' : 'Update Property'}
+                                            </Button>
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
-                    )}
-                </form>
-            </Form>
+                            )}
+                        </form>
+                    </Form>
+                </>
+            )}
         </>
     );
 };

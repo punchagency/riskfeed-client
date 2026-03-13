@@ -5,7 +5,7 @@ import type { ActivateAccountDto, ChangePasswordDto, ForgotPasswordDto, LoginDto
 import type { UpdateProfileDto } from "@/interfaces/user/dto/update-profile.dto";
 
 const AuthApi = {
-    register: (data: RegisterUserDto) => api.post(API_ENDPOINTS.auth.register, data, { authenticated: false }),
+    register: (data: RegisterUserDto | FormData) => api.post(API_ENDPOINTS.auth.register, data, { authenticated: false }),
     login: (data: LoginDto) => api.post(API_ENDPOINTS.auth.login, data, { authenticated: false }),
     refreshAccessToken: (data: RefreshTokenDto) => api.post(API_ENDPOINTS.auth.refreshAccessToken, data, { authenticated: false }),
     activateAccount: (data: ActivateAccountDto) => api.post(API_ENDPOINTS.auth.activateAccount, data, { authenticated: false }),

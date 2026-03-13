@@ -4,6 +4,7 @@ import type { CreateProjectDto } from "@/interfaces/project/dto/create-project.d
 import type { UpdateProjectDto } from "@/interfaces/project/dto/update-project.dto";
 import { PROJECT_RISK_LEVELS, PROJECT_STATUSES } from "@/interfaces/project/project.interface";
 import type { InviteContractorDto } from "@/interfaces/project/dto/invite-contractor.dto";
+import type { GetOpportunitiesDto } from "@/interfaces/project/dto/get-opportunities.dto";
 
 export const ProjectApi = {
     createProject: (data: CreateProjectDto) => api.post(API_ENDPOINTS.project.createProject, data),
@@ -12,4 +13,5 @@ export const ProjectApi = {
     getProjectById: (id: string) => api.get(API_ENDPOINTS.project.getProjectById.replace(":id", id)),
     suggestContractors: (id: string) => api.get(API_ENDPOINTS.project.suggestContractors.replace(":id", id)),
     inviteContractor: (id: string, data: InviteContractorDto) => api.post(API_ENDPOINTS.project.inviteContractor.replace(":id", id), data),
+    getOpportunities: (data: GetOpportunitiesDto) => api.get(API_ENDPOINTS.project.getOpportunities, { params: { ...data } }),
 };

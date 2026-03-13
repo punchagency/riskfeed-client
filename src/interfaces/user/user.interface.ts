@@ -10,21 +10,15 @@ export const VERIFICATION_STATUSES = ['not_started', 'in_progress', 'verified', 
 export const TEAM_SIZE_BUCKETS = ['solo', 'one_to_five', 'six_to_ten', 'eleven_to_twenty-five', 'twenty-five_to_fifty', 'fifty_plus'] as const;
 export const CONTRACTOR_STATUSES = ['pending', 'active', 'suspended', 'deleted'] as const;
 export const CERTIFICATE_STATUSES = ['under review', 'verified', 'expired'] as const;
+export const ACCOUNT_ROLES = ['owner', 'member'] as const;
+export const CORPORATION_TYPES = ['sole_proprietorship', 'partnership', 'limited_liability_company', 'corporation', 'other'] as const;
 
-interface IUserAddress {
+interface IAddress {
     street: string;
     zipcode: string;
     city: string;
     state: string;
     country: string;
-}
-
-interface IUserProperty {
-    type: typeof PROPERTY_TYPES[number];
-    name?: string;
-    address: IUserAddress;
-    ownershipType?: typeof OWNERSHIP_TYPES[number];
-    notes?: string;
 }
 
 export interface IUser {
@@ -35,7 +29,7 @@ export interface IUser {
         profilePicture?: string;
         email: string;
         phoneNumber: string;
-        address: IUserAddress;
+        address: IAddress;
         notificationPreferences: {
             emailNotifications: boolean;
             pushNotifications: boolean;
@@ -43,14 +37,13 @@ export interface IUser {
         };
         status: typeof USER_STATUSES[number];
         role: typeof ROLES[number];
-        ownershipType?: typeof OWNERSHIP_TYPES[number];
-        properties?: IUserProperty[];
         heardAboutRiskfeed?: {
             source: typeof HEARD_ABOUT_SOURCES[number];
             otherDetails?: string;
         };
     };
     contractor?: IContractor;
+    accountRole: typeof ACCOUNT_ROLES[number];
 }
 
 
@@ -100,25 +93,25 @@ interface IContractorVerification {
     financialHealthStatus: typeof VERIFICATION_STATUSES[number];
     lastVerifiedAt?: Date;
 }
-
+interface IContractorLicense {
+    number: string;
+    description: string;
+    state: string;
+}
 export interface IContractor {
     _id: string;
     companyName: string;
     businessName?: string;
-    licenseNumber: string;
-    yearsInBusiness: number;
+    companyLogo?: string;
+    licenses: IContractorLicense[];
+    corporationType: typeof CORPORATION_TYPES[number];
+    yearEstablished: number;
     taxId: string;
     ownerName?: string;
     businessEmail: string;
     businessPhone: string;
     businessWebsite?: string;
-    businessAddress: {
-        street: string;
-        zipcode: string;
-        city: string;
-        state: string;
-        country: string;
-    };
+    businessAddresses: IAddress[];
     services: typeof PROJECT_TYPES[number][];
     serviceAreas: string[];
     teamSize?: typeof TEAM_SIZE_BUCKETS[number];

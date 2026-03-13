@@ -6,6 +6,7 @@ import type { PROJECT_RISK_LEVELS, PROJECT_STATUSES } from '@/interfaces/project
 import type { CreateProjectDto } from '@/interfaces/project/dto/create-project.dto';
 import type { UpdateProjectDto } from '@/interfaces/project/dto/update-project.dto';
 import type { InviteContractorDto } from '@/interfaces/project/dto/invite-contractor.dto';
+import type { GetOpportunitiesDto } from '@/interfaces/project/dto/get-opportunities.dto';
 
 export const useCreateProject = () => {
     const queryClient = useQueryClient();
@@ -60,7 +61,7 @@ export const useSuggestContractors = (id: string) => {
         queryKey: ['suggested-contractors', id],
         queryFn: () => ProjectApi.suggestContractors(id),
         select: (responose) => responose.data,
-        enabled: !!id 
+        enabled: !!id
     })
 }
 
@@ -77,4 +78,12 @@ export const useInviteContractor = () => {
             APIErrorResponse(error);
         },
     });
+}
+
+export const useGetOpportunities = (data: GetOpportunitiesDto) => {
+    return useQuery({
+        queryKey: ['opportunities', data],
+        queryFn: () => ProjectApi.getOpportunities(data),
+        select: (response) => response.data
+    })
 }

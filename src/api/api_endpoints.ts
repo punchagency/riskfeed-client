@@ -36,6 +36,19 @@ const API_ENDPOINTS = {
     contractor: {
         getContractors: '/api/v1/contractor',
         getContractorById: '/api/v1/contractor/:id',
+    },
+    proposals: {
+        createProposal: '/api/v1/proposals',
+        getProposals: '/api/v1/proposals',
+        getJobs: '/api/v1/proposals/jobs',
+        getProjectProposals: '/api/v1/proposals/project/:projectId',
+        getContractorProposals: '/api/v1/proposals/contractor/:contractorId',
+        getProposalById: '/api/v1/proposals/:id',
+        updateProposal: '/api/v1/proposals/:id',
+        acceptProposal: '/api/v1/proposals/:id/accept',
+        rejectProposal: '/api/v1/proposals/:id/reject',
+        withdawProposal: '/api/v1/proposals/:id/withdraw',
+        getJobStats: '/api/v1/proposals/job-stats',
     }
 };
 

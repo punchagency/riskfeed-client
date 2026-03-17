@@ -66,5 +66,6 @@ export interface IProject {
     projectImages?: string[];
     invitations?: IProjectInvitation[];
     createdAt: Date;
-    isInvited?: boolean
+    isInvited?: boolean;
+    hasSentProposal?: boolean;
 }

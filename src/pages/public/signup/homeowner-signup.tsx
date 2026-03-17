@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm, type FieldPath } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { FaUser, FaHome, FaCheckCircle, FaEye, FaEyeSlash, FaArrowRight, FaArrowLeft, FaCheck, FaInfoCircle } from 'react-icons/fa';
 import Logo from '@/assets/images/logo.png';
 import type { RegisterUserDto } from '@/interfaces/user/dto/register-user.dto';
-import { PROPERTY_TYPES, OWNERSHIP_TYPES, HEARD_ABOUT_SOURCES } from '@/interfaces/user/user.interface';
+import { HEARD_ABOUT_SOURCES } from '@/interfaces/user/user.interface';
 import { cn } from '@/lib/utils';
 
 const homeownerSchema = z.object({
@@ -29,12 +29,6 @@ const homeownerSchema = z.object({
         state: z.string().min(1, 'State is required').length(2, 'State must be 2 characters (e.g., OR)'),
         zipcode: z.string().min(1, 'ZIP code is required').regex(/^\d{5}(-\d{4})?$/, 'Invalid ZIP code format'),
         country: z.string()
-    }),
-    propertyType: z.enum(PROPERTY_TYPES, {
-        required_error: "Please select a property type",
-    }),
-    ownershipType: z.enum(OWNERSHIP_TYPES, {
-        required_error: "Please select an ownership status",
     }),
     
     // Step 3: Password & Terms
@@ -84,6 +78,7 @@ const HomeownerSignup = () => {
     });
 
     const onSubmit = (data: HomeownerFormData) => {
+        console.log({ data });
         const payload: RegisterUserDto = {
             firstName: data.firstName,
             lastName: data.lastName,
@@ -422,7 +417,7 @@ const HomeownerSignup = () => {
                 
                 {/* Support Footer */}
                 <p className="text-center text-secondary-foreground mt-8 text-sm">
-                    Already have an account? <a href="/signin" className="text-primary font-semibold hover:underline">Sign in here</a>
+                    Already have an account? <Link to="/signin" className="text-primary font-semibold hover:underline">Sign in here</Link>
                 </p>
                 <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400">
                     <FaInfoCircle />

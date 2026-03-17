@@ -4,13 +4,15 @@ import { MapPin, Home, DollarSign, Calendar, Clock, Eye, Heart, FileText } from 
 import { Button } from '@/components/ui/button';
 import type { IProject } from '@/interfaces/project/project.interface';
 import { cn } from '@/lib/utils';
-import { Badge } from './ui/badge';
+import { Badge } from '../../../../components/ui/badge';
+import { useNavigate } from 'react-router-dom';
 
 interface ProjectItemProps {
   project: IProject;
 }
 
 export const ProjectItem: React.FC<ProjectItemProps> = ({ project }) => {
+  const navigate = useNavigate();
   const [isHovered, setIsHovered] = React.useState(false);
 
   const formatCurrency = (amount: number) => {
@@ -131,11 +133,16 @@ export const ProjectItem: React.FC<ProjectItemProps> = ({ project }) => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3">
-            <Button className="flex items-center gap-2">
-              <Heart className="w-4 h-4" />
-              Express Interest
-            </Button>
-            <Button variant="secondary" className="flex items-center gap-2">
+            {!project?.hasSentProposal && (
+              <Button className="flex items-center gap-2"
+                onClick={() => navigate(`/opportunities/express-interest/${project._id}`, { state: project })}
+              >
+                <Heart className="w-4 h-4" />
+                Express Interest
+              </Button>
+            )}
+
+            <Button variant="secondary" className="flex items-center text-foreground border-border border gap-2">
               <FileText className="w-4 h-4" />
               Request Site Visit
             </Button>

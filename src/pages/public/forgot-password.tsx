@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -28,6 +28,13 @@ const ForgotPassword = () => {
     const [step, setStep] = useState<1 | 2>(1);
     const [email, setEmail] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [countdown, setCountdown] = useState(0);
+
+    useEffect(() => {
+        if (countdown <= 0) return;
+        const timer = setTimeout(() => setCountdown(prev => prev - 1), 1000);
+        return () => clearTimeout(timer);
+    }, [countdown]);
 
     const forgotPassword = useForgotPassword();
     const resendResetPasswordCode = useResendResetPasswordCode();
@@ -73,6 +80,7 @@ const ForgotPassword = () => {
         resendResetPasswordCode.mutate({ email }, {
             onSuccess: () => {
                 toast.success('Reset code resent to your email');
+                setCountdown(60);
             }
         });
     };
@@ -118,7 +126,7 @@ const ForgotPassword = () => {
                                     className="w-full h-12 rounded-xl font-semibold mt-6"
                                     disabled={forgotPassword.isPending}
                                 >
-                                    {forgotPassword.isPending ? 'Sending Link...' : 'Send Reset Link'}
+                                    {forgotPassword.isPending ? 'Sending Code...' : 'Send Reset Code'}
                                 </Button>
                             </form>
                         </Form>
@@ -133,7 +141,7 @@ const ForgotPassword = () => {
                                             <Label>Reset Code</Label>
                                             <FormControl>
                                                 <div className="flex justify-center">
-                                                    <InputOTP maxLength={6} {...field}>
+                                                    <InputOTP maxLength={6} value={field.value} onChange={(value) => form2.setValue('resetPasswordCode', value, { shouldValidate: true })}>
                                                         <InputOTPGroup className="flex gap-2">
                                                             <InputOTPSlot index={0} className="w-12 h-12 first:rounded-l-xl rounded-r-xl border" />
                                                             <InputOTPSlot index={1} className="w-12 h-12 rounded-xl border" />
@@ -195,10 +203,14 @@ const ForgotPassword = () => {
                             <button
                                 type="button"
                                 onClick={handleResendCode}
-                                disabled={resendResetPasswordCode.isPending}
-                                className="text-sm text-primary hover:underline font-medium"
+                                disabled={resendResetPasswordCode.isPending || countdown > 0}
+                                className="text-sm text-primary hover:underline font-medium disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline"
                             >
-                                {resendResetPasswordCode.isPending ? 'Sending...' : "Didn't receive a code? Resend"}
+                                {resendResetPasswordCode.isPending
+                                    ? 'Sending...'
+                                    : countdown > 0
+                                        ? `Resend in ${countdown}s`
+                                        : "Didn't receive a code? Resend"}
                             </button>
                         )}
 

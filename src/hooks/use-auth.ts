@@ -66,7 +66,6 @@ export const useLogin = () => {
     return useMutation({
         mutationFn: AuthApi.login,
         onSuccess: (response) => {
-            console.log(response.data)
             const { accessToken, refreshToken } = response.data;
             Session.setCookie('token', accessToken);
             if (refreshToken) Session.setCookie('refreshToken', refreshToken);

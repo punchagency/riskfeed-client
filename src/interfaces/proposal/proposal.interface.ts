@@ -1,4 +1,5 @@
 import type { IProject } from "../project/project.interface";
+import type { IContractor } from "../user/user.interface";
 
 export const PROPOSAL_STATUSES = ['pending', 'accepted', 'rejected', 'withdrawn'] as const;
 export const JOB_STATUSES = ['pending', 'active', 'completed', 'cancelled'] as const;
@@ -15,7 +16,7 @@ interface IProposalMilestone {
 export interface IProposal {
     _id: string;
     project: string;
-    contractor: string;
+    contractor?: IContractor | string;
     coverLetter?: string;
     hourlyRate?: number;
     submissionDate: Date;

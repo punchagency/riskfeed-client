@@ -1,19 +1,16 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquarePlus, Plus } from 'lucide-react';
+import { MessageSquarePlus } from 'lucide-react';
 import { PageHeader } from '@/components/page-header';
-import { useCreateConversation, useGetConversationsInfinite } from '@/hooks/use-message';
-import { useProjects } from '@/hooks/use-project';
+import { useGetConversationsInfinite } from '@/hooks/use-message';
 import { useMessageSocket } from '@/hooks/use-message-socket';
 import { useSocket } from '@/context/socket-context';
 import { useAppSelector } from '@/store/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import type { IConversation, IConversationMessage } from '@/interfaces/message/conversation.interface';
-import type { IProject } from '@/interfaces/project/project.interface';
 import { cn } from '@/lib/utils';
-import ConversationList from './components/ConversationList';
-import MessageThread from './components/MessageThread';
-import NewConversationModal from './components/NewConversationModal';
+import ConversationList from '@/pages/user/messages/components/ConversationList';
+import MessageThread from '@/pages/user/messages/components/MessageThread';
 
 const EmptyThreadState = () => (
     <motion.div
@@ -27,7 +24,7 @@ const EmptyThreadState = () => (
         <div>
             <p className="font-semibold text-lg">Select a conversation</p>
             <p className="text-sm text-muted-foreground mt-1">
-                Choose a conversation from the left, or start a new one.
+                Choose a conversation from the left to view messages.
             </p>
         </div>
     </motion.div>
@@ -36,30 +33,22 @@ const EmptyThreadState = () => (
 const Messages: React.FC = () => {
     const currentUser = useAppSelector((state) => state.user.user);
     const currentUserId = currentUser?.user?._id ?? '';
-    const currentUserRole = currentUser?.user?.role ?? 'user';
+    const currentUserRole = currentUser?.user?.role ?? 'contractor';
 
     const queryClient = useQueryClient();
 
     const [selectedConversation, setSelectedConversation] = useState<IConversation | null>(null);
-    const [showNewModal, setShowNewModal] = useState(false);
     const [search, setSearch] = useState('');
-
-    // Socket messages per conversation: conversationId -> IConversationMessage[]
     const [socketMessages, setSocketMessages] = useState<Record<string, IConversationMessage[]>>({});
     const [typingUsers, setTypingUsers] = useState<Record<string, { userId: string; userName: string }[]>>({});
 
     // Online users from global socket context
     const { onlineUsers, seedOnlineUsers } = useSocket();
 
-    // API queries
     const conversationsQuery = useGetConversationsInfinite({ limit: 20, search: search || undefined });
-    const projectsQuery = useProjects({ page: 1, limit: 1000 });
-    const createConversationMutation = useCreateConversation();
-
     const conversations = useMemo<IConversation[]>(() => {
         return conversationsQuery.data?.pages.flatMap((page) => page.data.items) ?? [];
     }, [conversationsQuery.data]);
-    const projects: IProject[] = projectsQuery.data?.data?.items ?? [];
 
     useEffect(() => {
         const onlineIds = conversations
@@ -80,21 +69,19 @@ const Messages: React.FC = () => {
         }
     }, [conversations, selectedConversation]);
 
-    // Socket handlers
     const handleNewMessage = useCallback((conversationId: string, message: IConversationMessage) => {
         setSocketMessages((prev) => ({
             ...prev,
             [conversationId]: [...(prev[conversationId] ?? []), message],
         }));
-        // Invalidate so the conversation list (last message preview) stays fresh
+        // Keep conversation list and individual conversation cache fresh
         queryClient.invalidateQueries({ queryKey: ['conversations'] });
-        // Invalidate the specific conversation so apiMessages re-fetches on next open
         queryClient.invalidateQueries({ queryKey: ['conversation', conversationId] });
     }, [queryClient]);
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleMessageRead = useCallback((_conversationId: string, _userId: string) => {
-        // Could update read receipts here if needed
+        // read receipts — no-op for now
     }, []);
 
     const handleTypingStart = useCallback((conversationId: string, userId: string, userName: string) => {
@@ -121,17 +108,8 @@ const Messages: React.FC = () => {
 
     const handleSelectConversation = (conversation: IConversation) => {
         setSelectedConversation(conversation);
-        // Clear accumulated socket messages for this conversation since the API
-        // will re-fetch the full history (avoids duplicate display)
+        // Clear stale socket messages so the fresh API fetch is the source of truth
         setSocketMessages((prev) => ({ ...prev, [conversation._id]: [] }));
-    };
-
-    const handleCreateConversation = (projectIds: string[]) => {
-        createConversationMutation.mutate({ projectIds }, {
-            onSuccess: () => {
-                setShowNewModal(false);
-            },
-        });
     };
 
     const activeSocketMessages = selectedConversation
@@ -146,13 +124,9 @@ const Messages: React.FC = () => {
         <>
             <PageHeader
                 title="Messages"
-                description="Communicate with your contractors"
-                ActionIcon={Plus}
-                actionText="New Group Message"
-                onAction={() => setShowNewModal(true)}
+                description="Communicate with your clients"
             />
 
-            {/* Main Layout */}
             <div className="flex h-[calc(100vh-221px)] rounded-xl border border-border overflow-hidden bg-card">
                 {/* Left: Conversation List */}
                 <div className={cn("shrink-0 border-r border-border", selectedConversation ? "hidden md:block md:w-85" : "w-full md:w-85")}>
@@ -213,16 +187,6 @@ const Messages: React.FC = () => {
                     </AnimatePresence>
                 </div>
             </div>
-
-            {/* New Conversation Modal */}
-            <NewConversationModal
-                open={showNewModal}
-                onClose={() => setShowNewModal(false)}
-                projects={projects}
-                isLoadingProjects={projectsQuery.isLoading}
-                onCreateConversation={handleCreateConversation}
-                isCreating={createConversationMutation.isPending}
-            />
         </>
     );
 };

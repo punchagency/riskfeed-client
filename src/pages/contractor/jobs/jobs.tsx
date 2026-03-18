@@ -25,7 +25,7 @@ const Jobs: React.FC = () => {
         jobStatus: undefined,
         search: undefined,
     });
-    console.log('Job Stats:', jobStats.data);
+
     React.useEffect(() => {
         const timeout = setTimeout(() => {
             setFilter(prev => ({

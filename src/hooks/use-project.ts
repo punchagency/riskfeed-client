@@ -60,7 +60,7 @@ export const useSuggestContractors = (id: string) => {
     return useQuery({
         queryKey: ['suggested-contractors', id],
         queryFn: () => ProjectApi.suggestContractors(id),
-        select: (responose) => responose.data,
+        select: (response) => response.data,
         enabled: !!id
     })
 }

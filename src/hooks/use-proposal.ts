@@ -45,6 +45,7 @@ export const useAcceptProposal = () => {
         onSuccess: () => {
             toast.success('Proposal accepted successfully');
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
         },
         onError: (error) => {
             HandleAPIError(error);
@@ -60,6 +61,7 @@ export const useRejectProposal = () => {
         onSuccess: () => {
             toast.success('Proposal rejected successfully');
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
+            queryClient.invalidateQueries({ queryKey: ['projects'] });
         },
         onError: (error) => {
             HandleAPIError(error);

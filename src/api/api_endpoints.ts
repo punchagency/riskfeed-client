@@ -49,6 +49,12 @@ const API_ENDPOINTS = {
         rejectProposal: '/api/v1/proposals/:id/reject',
         withdawProposal: '/api/v1/proposals/:id/withdraw',
         getJobStats: '/api/v1/proposals/job-stats',
+    },
+    messages: {
+        createConversation: '/api/v1/messages/conversations',
+        getConversations: '/api/v1/messages/conversations',
+        getConversationById: '/api/v1/messages/conversations/:id',
+        uploadMessageAttachment: '/api/v1/messages/upload-attachments',
     }
 };
 

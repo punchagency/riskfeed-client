@@ -41,11 +41,11 @@ export const useAcceptProposal = () => {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => ProposalApi.acceptProposal(id),
-        onSuccess: () => {
+        mutationFn: ({ id, pin }: { id: string; pin: string }) => ProposalApi.acceptProposal(id, { pin }),
+        onSuccess: (    _, variables) => {
             toast.success('Proposal accepted successfully');
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
-            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            queryClient.invalidateQueries({ queryKey: ['project', variables.id] });
         },
         onError: (error) => {
             HandleAPIError(error);
@@ -58,10 +58,10 @@ export const useRejectProposal = () => {
 
     return useMutation({
         mutationFn: (id: string) => ProposalApi.rejectProposal(id),
-        onSuccess: () => {
+        onSuccess: (_, variables) => {
             toast.success('Proposal rejected successfully');
             queryClient.invalidateQueries({ queryKey: ['proposals'] });
-            queryClient.invalidateQueries({ queryKey: ['projects'] });
+            queryClient.invalidateQueries({ queryKey: ['project', variables] });
         },
         onError: (error) => {
             HandleAPIError(error);

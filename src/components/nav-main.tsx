@@ -26,6 +26,7 @@ export function NavMain({
     url: string
     icon?: LucideIcon | IconType;
     isActive?: boolean
+    badge?: React.ReactNode
     items?: {
       title: string
       url: string
@@ -81,10 +82,11 @@ export function NavMain({
           
           return (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild tooltip={item.title} isActive={isActive}>
-                <Link to={item.url} onClick={onItemClick}>
+              <SidebarMenuButton asChild tooltip={item.title} isActive={isActive} className="h-10">
+                <Link to={item.url} onClick={onItemClick} className="flex items-center w-full">
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
+                  {item.badge}
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

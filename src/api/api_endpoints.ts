@@ -15,6 +15,9 @@ const API_ENDPOINTS = {
         changePassword: '/api/v1/user/change-password',
         updateProfile: '/api/v1/user/profile',
         logout: '/api/v1/user/logout',
+        setTransactionPin: '/api/v1/user/transaction-pin',
+        resetTransactionPinCode: '/api/v1/user/reset-transaction-pin-code',
+        changeTransactionPin: '/api/v1/user/change-transaction-pin'
     },
     project: {
         createProject: '/api/v1/projects',
@@ -55,6 +58,23 @@ const API_ENDPOINTS = {
         getConversations: '/api/v1/messages/conversations',
         getConversationById: '/api/v1/messages/conversations/:id',
         uploadMessageAttachment: '/api/v1/messages/upload-attachments',
+    },
+    transactions: {
+        getTransactions: '/api/v1/transactions',
+        getTransactionById: '/api/v1/transactions/:id',
+        confirmMilestoneCompleted: '/api/v1/transactions/milestone/:milestoneId/confirm',
+        releaseMilestonePayment: '/api/v1/transactions/milestone/:milestoneId/release',
+        escrowAndPayment: '/api/v1/transactions/escrow',
+        escrowPaymentStats: '/api/v1/transactions/escrow/stats'
+    },
+    wallet: {
+        getWalletBalance: '/api/v1/wallet',
+        fundWallet: '/api/v1/wallet/fund',
+        withdrawWallet: '/api/v1/wallet/withdraw',
+        getBankingMethods: '/api/v1/wallet/banking-methods',
+        addBankingMethod: '/api/v1/wallet/banking-methods',
+        removeBankingMethod: '/api/v1/wallet/banking-methods/:id',
+        setDefaultBankingMethod: '/api/v1/wallet/banking-methods/:id/set-default',
     }
 };
 

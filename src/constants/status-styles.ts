@@ -13,6 +13,8 @@ export const getStatusColor = (status: string) => {
         case 'confirmed':
             return 'bg-emerald-500/20 text-emerald-600 border-emerald-500/30 dark:text-emerald-400';
         case 'service_in_progress':
+        case 'in_progress':
+            return 'bg-indigo-500/20 text-indigo-600 border-indigo-500/30 dark:text-indigo-400';
         case 'scheduled':
             return 'bg-indigo-500/20 text-indigo-600 border-indigo-500/30 dark:text-indigo-400';
         case 'completed_by_provider':

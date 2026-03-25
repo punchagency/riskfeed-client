@@ -7,6 +7,9 @@ const Opportunities = lazy(()=> import('../pages/contractor/opportunities/opport
 const ExpressInterest = lazy(()=> import('../pages/contractor/opportunities/express-interest'))
 const Jobs = lazy(()=> import('../pages/contractor/jobs/jobs'));
 const Messages = lazy(() => import('@/pages/contractor/messages/messages'));
+const Wallet = lazy(() => import('@/pages/contractor/wallet/wallet'));
+const AddBankingMethod = lazy(() => import('@/pages/contractor/wallet/add-banking-method'));
+const EscrowPayment = lazy(() => import('@/pages/contractor/escrow-payment/escrow-payment'));
 
 export const contractorRoutes: RouteObject[] = [
   {
@@ -31,7 +34,19 @@ export const contractorRoutes: RouteObject[] = [
       {
         path: '/messages',
         element: <Messages />
-      }
+      },
+      {
+        path: '/wallet',
+        element: <Wallet />
+      },
+      {
+        path: '/wallet/add-banking-method',
+        element: <AddBankingMethod />
+      },
+      {
+        path: '/escrow-payments',
+        element: <EscrowPayment />
+      },
     ],
   },
 ];

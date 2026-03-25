@@ -7,6 +7,8 @@ import { setUser, clearUser } from '@/store/slices/userSlice';
 import APIErrorResponse from '@/utils/HandleAPIError';
 import { useEffect } from 'react';
 import type { RootState } from '@/store';
+import HandleAPIError from '@/utils/HandleAPIError';
+import { toast } from 'sonner';
 
 export const useAuth = () => {
     const dispatch = useDispatch();
@@ -164,6 +166,47 @@ export const useUpdateProfile = () => {
         },
         onError: (error) => {
             APIErrorResponse(error);
+        },
+    });
+};
+
+export const useSetTransactionPin = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: AuthApi.setTransactionPin,
+        onSuccess: () => {
+            toast.success('Transaction pin set successfully');
+            queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+        },
+        onError: (error) => {
+            HandleAPIError(error);
+        },
+    });
+};
+
+export const useResetTransactionPinCode = () => {
+    return useMutation({
+        mutationFn: AuthApi.resetTransactionPinCode,
+        onSuccess: () => {
+            toast.success('Transaction pin reset code sent successfully');
+        },
+        onError: (error) => {
+            HandleAPIError(error);
+        },
+    });
+};
+
+export const useChangeTransactionPin = () => {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: AuthApi.changeTransactionPin,
+        onSuccess: () => {
+            toast.success('Transaction pin changed successfully');
+            queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+            queryClient.invalidateQueries({ queryKey: ['wallet-balance'] });
+        },
+        onError: (error) => {
+            HandleAPIError(error);
         },
     });
 };

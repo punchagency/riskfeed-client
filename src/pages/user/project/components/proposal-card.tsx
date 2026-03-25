@@ -15,6 +15,10 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Star, Award, BadgeCheck, Building2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useNavigate } from 'react-router-dom';
+import { useAppSelector } from '@/store/hooks';
+import InsufficientFundsModal from '@/components/InsufficientModal';
+import TransactionPinDrawer from '@/components/TransactionPinDrawer';
 import type { IProposal } from '@/interfaces/proposal/proposal.interface';
 import type { IContractor } from '@/interfaces/user/user.interface';
 import { useAcceptProposal, useRejectProposal } from '@/hooks/use-proposal';
@@ -51,9 +55,14 @@ const formatTimeline = (proposal: IProposal): string => {
 export const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onViewProfile }) => {
     const acceptMutation = useAcceptProposal();
     const rejectMutation = useRejectProposal();
+    const navigate = useNavigate();
+    const currentUser = useAppSelector((state) => state.user.user);
+    const walletBalance = currentUser?.user?.wallet?.balance ?? 0;
 
     const [coverLetterExpanded, setCoverLetterExpanded] = useState(false);
     const [confirmAction, setConfirmAction] = useState<'accept' | 'decline' | null>(null);
+    const [showInsufficientModal, setShowInsufficientModal] = useState(false);
+    const [showPinDrawer, setShowPinDrawer] = useState(false);
 
     const contractor = typeof proposal.contractor === 'object' ? proposal.contractor as IContractor : null;
     const averageRating = contractor?.ratings?.averageRatings ?? 0;
@@ -78,11 +87,17 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onViewProf
 
     const handleConfirm = () => {
         if (confirmAction === 'accept') {
-            acceptMutation.mutate(proposal._id);
+            if (walletBalance < (proposal.estimatedAmount ?? 0)) {
+                setConfirmAction(null);
+                setShowInsufficientModal(true);
+            } else {
+                setConfirmAction(null);
+                setShowPinDrawer(true);
+            }
         } else if (confirmAction === 'decline') {
             rejectMutation.mutate(proposal._id);
+            setConfirmAction(null);
         }
-        setConfirmAction(null);
     };
 
     return (
@@ -307,6 +322,33 @@ export const ProposalCard: React.FC<ProposalCardProps> = ({ proposal, onViewProf
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            <InsufficientFundsModal
+                isOpen={showInsufficientModal}
+                onClose={() => setShowInsufficientModal(false)}
+                onTopUp={() => {
+                    setShowInsufficientModal(false);
+                    navigate('/wallet', { state: { requiredAmount: proposal.estimatedAmount ?? 0 } });
+                }}
+                currentBalance={walletBalance}
+                requiredAmount={proposal.estimatedAmount ?? 0}
+                message="You need more funds in your wallet to accept this proposal. Please add funds to continue."
+            />
+
+            <TransactionPinDrawer
+                isOpen={showPinDrawer}
+                onClose={() => setShowPinDrawer(false)}
+                onSuccess={(pin) => {
+                    acceptMutation.mutate(
+                        { id: proposal._id, pin },
+                        { onSuccess: () => setShowPinDrawer(false) }
+                    );
+                }}
+                title="Authorize Acceptance"
+                description={`The budget amount of $${proposal.estimatedAmount?.toLocaleString()} will be moved to escrow. Enter your 4-digit PIN to proceed.`}
+                amount={proposal.estimatedAmount}
+                isLoading={acceptMutation.isPending}
+            />
         </>
     );
 };

@@ -20,7 +20,14 @@ interface IAddress {
     state: string;
     country: string;
 }
-
+interface IUserWallet {
+    balance: number;
+    availableBalance: number;
+    holdBalance: number;
+    totalDeposited: number;
+    totalEarned: number;
+    totalWithdrawn: number;
+}
 export interface IUser {
     user: {
         _id: string;
@@ -41,6 +48,8 @@ export interface IUser {
             source: typeof HEARD_ABOUT_SOURCES[number];
             otherDetails?: string;
         };
+        wallet: IUserWallet;
+        hasTransactionPin: boolean;
     };
     contractor?: IContractor;
     accountRole: typeof ACCOUNT_ROLES[number];

@@ -18,6 +18,9 @@ const AuthApi = {
     updateProfile: (data: UpdateProfileDto) => api.put(API_ENDPOINTS.user.updateProfile, data, { authenticated: true }),
     changePassword: (data: ChangePasswordDto) => api.post(API_ENDPOINTS.user.changePassword, data, { authenticated: true }),
     logout: () => api.post(API_ENDPOINTS.user.logout, {}, { authenticated: true }),
+    setTransactionPin: (data: { pin: string }) => api.post(API_ENDPOINTS.user.setTransactionPin, data, { authenticated: true }),
+    resetTransactionPinCode: () => api.post(API_ENDPOINTS.user.resetTransactionPinCode, {}, { authenticated: true }),
+    changeTransactionPin: (data: { pin: string, code: string }) => api.post(API_ENDPOINTS.user.changeTransactionPin, data, { authenticated: true }),
 };
 
 export default AuthApi;

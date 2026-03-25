@@ -137,7 +137,7 @@ const MessageThread = ({
     // Scroll to bottom on new messages
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [allMessages.length]);
+    }, [allMessages]);
 
     // Mark as read when conversation opens
     useEffect(() => {
@@ -254,12 +254,12 @@ const MessageThread = ({
                         {/* Online / Last seen status */}
                         {!primaryParticipant.isOnline && primaryParticipant?.lastSeen && (
                             <div className="flex items-center gap-1.5 mt-0.5">
-                                <span>{formatDistanceToNow(new Date(primaryParticipant?.lastSeen))}</span>
+                                <span className='text-xs text-muted-foreground'>{formatDistanceToNow(new Date(primaryParticipant?.lastSeen))}</span>
                             </div>
                         )}
 
                         {addressText && (
-                            <p className="text-xs text-foreground max-w-[300px] truncate">📍 {addressText}</p>
+                            <p className="text-xs text-muted-foreground max-w-[300px] truncate">📍 {addressText}</p>
                         )}
                     </div>
                 </div>

@@ -12,12 +12,6 @@ export interface ConfirmMilestoneDto {
     projectId: string;
 }
 
-export interface ReleaseMilestoneDto {
-    projectId: string;
-    releaseAmount?: number;
-    notes?: string;
-}
-
 export interface GetEscrowPaymentQueryDto {
     projectId?: string;
     page?: number;

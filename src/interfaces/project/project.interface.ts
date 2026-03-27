@@ -17,6 +17,9 @@ export interface IProjectMilestone {
     sequence: number;
     status: typeof PROJECT_MILESTONES_STATUSES[number];
     transaction?: string;
+    startedAt?: Date;
+    paymentRequestedAt?: Date;
+    completedAt?: Date;
 }
 
 interface IProjectMatchEvaluation {

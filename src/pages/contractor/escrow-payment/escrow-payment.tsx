@@ -19,11 +19,18 @@ import { Button } from '@/components/ui/button';
 import { useEscrowPaymentStats } from '@/hooks/use-transaction';
 import { formatCurrency } from '@/utils/format-currency-price';
 import { Card } from '@/components/ui/card';
+import { useRequestPayment, useStartMilestone } from '@/hooks/use-milestones';
+import { useNavigate } from 'react-router-dom';
 
 const EscrowPayment: React.FC = () => {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('')
     const debouncedSearchTerm = useDebounce(searchTerm, 500)
     const escrowPaymentStats = useEscrowPaymentStats();
+    const startMilestone = useStartMilestone();
+    const requestPayment = useRequestPayment();
+
+    const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | undefined>();
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>()
 
@@ -49,6 +56,20 @@ const EscrowPayment: React.FC = () => {
 
     const escrowPayments = useEscrowPayments(filters)
     const items = escrowPayments?.data?.data?.items || []
+
+    const handleStartMilestone = (milestoneId: string, projectId: string) => {
+        setLoadingMilestoneId(milestoneId);
+        startMilestone.mutate({projectId, milestoneId}, {
+            onSettled: () => setLoadingMilestoneId(undefined)
+        })
+    }
+
+    const handleRequestPayment = (milestoneId: string, projectId: string) => {
+        setLoadingMilestoneId(milestoneId);
+        requestPayment.mutate({projectId, milestoneId, data: { projectId, notes: " "}}, {
+            onSettled: () => setLoadingMilestoneId(undefined)
+        })
+    }
 
     return (
         <div className="space-y-6">
@@ -124,7 +145,16 @@ const EscrowPayment: React.FC = () => {
                     />
                 ) : (
                     items.map((item: IEscrowPayment, index: number) => (
-                        <EscrowPaymentCard key={item.project?._id || index} data={item} role="contractor" />
+                        <EscrowPaymentCard 
+                            key={item.project?._id || index} 
+                            data={item} 
+                            role="contractor" 
+                            onStartMilestone={handleStartMilestone} 
+                            onRequestPayment={handleRequestPayment}
+                            onViewDisputeHistory={(projectId) => navigate(`/escrow-payments/${projectId}/disputes`)}
+                            isLoading={startMilestone.isPending || requestPayment.isPending}
+                            loadingMilestoneId={loadingMilestoneId}
+                        />
                     ))
                 )}
             </div>

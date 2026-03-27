@@ -44,7 +44,7 @@ interface Summary {
 }
 
 export interface IEscrowPayment {
-  project: IProject;
+  project: IProject & { hasDispute: boolean };
   milestones: IProjectMilestone[];
   transactions: ITransaction[];
   summary: Summary;

@@ -27,9 +27,14 @@ export const getStatusColor = (status: string) => {
         case 'quote_rejected':
             return 'bg-red-500/20 text-red-600 border-red-500/30 dark:text-red-400';
         case 'disputed':
+        case 'open':
             return 'bg-orange-500/20 text-orange-600 border-orange-500/30 dark:text-orange-400';
+        case 'under_review':
+            return 'bg-yellow-500/20 text-yellow-600 border-yellow-500/30 dark:text-yellow-400';
         case 'resolved':
             return 'bg-teal-500/20 text-teal-600 border-teal-500/30 dark:text-teal-400';
+        case 'closed':
+            return 'bg-gray-500/20 text-gray-600 border-gray-500/30 dark:text-gray-400';
         case 'no_show':
             return 'bg-gray-500/20 text-gray-600 border-gray-500/30 dark:text-gray-400';
         default:

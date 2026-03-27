@@ -19,6 +19,7 @@ const Messages = lazy(() => import('@/pages/user/messages/messages'));
 const Wallet = lazy(() => import('@/pages/user/wallet/wallet'));
 const AddBankingMethod = lazy(() => import('@/pages/user/wallet/add-banking-method'));
 const EscrowPayment = lazy(() => import('@/pages/user/escrow-payment/escrow-payment'));
+const ProjectDisputes = lazy(() => import('@/pages/user/escrow-payment/project-dispute'));
 
 export const userRoutes: RouteObject[] = [
   {
@@ -84,6 +85,10 @@ export const userRoutes: RouteObject[] = [
         path: '/escrow-payments',
         element: <EscrowPayment />,
       },
+      {
+        path: '/escrow-payments/:projectId/disputes',
+        element: <ProjectDisputes />,
+      }
     ],
   },
   {

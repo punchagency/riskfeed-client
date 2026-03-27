@@ -18,11 +18,20 @@ import { EscrowStatsLoading } from './components/escrow-stats-loading'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/utils/format-currency-price'
 import { Clock, Shield, TrendingUp } from 'lucide-react'
+import { useReleasePayment } from '@/hooks/use-milestones'
+import { useRaiseDisputeForMilestone } from '@/hooks/use-disputes'
+import TransactionPinDrawer from '@/components/TransactionPinDrawer'
+import { useNavigate } from 'react-router-dom'
 
 const EscrowPayment: React.FC = () => {
+    const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('')
     const debouncedSearchTerm = useDebounce(searchTerm, 500)
     const escrowPaymentStats = useEscrowPaymentStats();
+    const releasePayment = useReleasePayment();
+    const disputeMilestone = useRaiseDisputeForMilestone();
+
+    const [loadingMilestoneId, setLoadingMilestoneId] = useState<string | undefined>();
 
     const [dateRange, setDateRange] = useState<DateRange | undefined>()
 
@@ -33,6 +42,15 @@ const EscrowPayment: React.FC = () => {
         startDate: '',
         endDate: '',
     })
+
+    // Pending release state for TransactionPinDrawer
+    const [pendingRelease, setPendingRelease] = useState<{
+        isOpen: boolean
+        milestoneId: string
+        projectId: string
+        releaseAmount: number
+        notes?: string
+    } | null>(null)
 
     // Sync debounced search term and date range to query filters
     useEffect(() => {
@@ -48,6 +66,48 @@ const EscrowPayment: React.FC = () => {
 
     const escrowPayments = useEscrowPayments(filters)
     const items = escrowPayments?.data?.data?.items || []
+
+    const handleApproveRelease = (milestoneId: string, projectId: string, releaseData: { releaseAmount: number; notes?: string }) => {
+        setPendingRelease({
+            isOpen: true,
+            milestoneId,
+            projectId,
+            releaseAmount: releaseData.releaseAmount,
+            notes: releaseData.notes,
+        })
+    }
+
+    const handlePinSuccess = (pin: string) => {
+        if (pendingRelease) {
+            setLoadingMilestoneId(pendingRelease.milestoneId);
+            releasePayment.mutate({
+                projectId: pendingRelease.projectId,
+                milestoneId: pendingRelease.milestoneId,
+                data: {
+                    projectId: pendingRelease.projectId,
+                    releaseAmount: pendingRelease.releaseAmount,
+                    notes: pendingRelease.notes,
+                    transactionPin: pin,
+                }
+            }, {
+                onSettled: () => {
+                    setLoadingMilestoneId(undefined);
+                    setPendingRelease(null);
+                }
+            })
+        }
+    }
+
+    const handlePinClose = () => {
+        setPendingRelease(null);
+    }
+
+    // const handleDispute = (milestoneId: string, projectId: string) => {
+    //     setLoadingMilestoneId(milestoneId);
+    //     disputeMilestone.mutate({projectId, milestoneId, data: { reason: "Work not satisfactory or incomplete" }}, {
+    //         onSettled: () => setLoadingMilestoneId(undefined)
+    //     })
+    // }
 
     return (
         <div className="space-y-6">
@@ -95,7 +155,7 @@ const EscrowPayment: React.FC = () => {
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
-                <div className='sm:w-[300px] shrink-0'>
+                <div className='sm:w-75 shrink-0'>
                     <DatePickerWithRange
                         className='h-10 [&>button]:h-10 [&>button]:w-full'
                         date={dateRange}
@@ -122,7 +182,17 @@ const EscrowPayment: React.FC = () => {
                     />
                 ) : (
                     items.map((item: IEscrowPayment, index: number) => (
-                        <EscrowPaymentCard key={item.project?._id || index} data={item} role="user" />
+                        <EscrowPaymentCard 
+                            key={item.project?._id || index} 
+                            data={item} 
+                            role="user" 
+                            onApproveRelease={(mId, releaseData) => handleApproveRelease(mId, item.project?._id || '', releaseData)}
+                            onDisputeCreated={() => console.log("Dispute created")}
+                            onResolveDispute={(mId, projectId) => console.log("Resolve dispute:", mId, projectId)}
+                            onViewDisputeHistory={(projectId) => navigate(`/escrow-payments/${projectId}/disputes`)}
+                            isLoading={releasePayment.isPending || disputeMilestone.isPending}
+                            loadingMilestoneId={loadingMilestoneId}
+                        />
                     ))
                 )}
             </div>
@@ -136,6 +206,17 @@ const EscrowPayment: React.FC = () => {
                     onPageChange={(page) => setFilters(prev => ({ ...prev, page }))}
                 />
             )}
+
+            {/* Transaction PIN Drawer for Payment Release */}
+            <TransactionPinDrawer
+                isOpen={pendingRelease?.isOpen || false}
+                onClose={handlePinClose}
+                onSuccess={handlePinSuccess}
+                title="Authorize Payment Release"
+                description="Enter your 4-digit transaction PIN to authorize the payment release"
+                amount={pendingRelease?.releaseAmount}
+                isLoading={releasePayment.isPending}
+            />
         </div>
     )
 }

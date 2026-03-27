@@ -1,5 +1,5 @@
 import { TransactionApi } from "@/api/services/transactions"
-import type { ConfirmMilestoneDto, GetEscrowPaymentQueryDto, GetTransactionsQueryDto, ReleaseMilestoneDto } from "@/interfaces/transaction/dto/transaction.dto"
+import type { ConfirmMilestoneDto, GetEscrowPaymentQueryDto, GetTransactionsQueryDto } from "@/interfaces/transaction/dto/transaction.dto"
 import HandleAPIError from "@/utils/HandleAPIError"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
@@ -27,20 +27,6 @@ export const useConfirmMilestoneCompleted = () => {
         mutationFn: ({milestoneId, data}: {milestoneId: string, data: ConfirmMilestoneDto}) => TransactionApi.confirmMilestoneCompleted(milestoneId, data),
         onSuccess: () => {
             toast.success('Milestone confirmed successfully');
-            queryClient.invalidateQueries({ queryKey: ['transactions'] })
-        },
-        onError: (error) => {
-            HandleAPIError(error)
-        }
-    })
-}
-
-export const useReleaseMilestonePayment = () => {
-    const queryClient = useQueryClient();
-    return useMutation({
-        mutationFn: ({milestoneId, data}: {milestoneId: string, data: ReleaseMilestoneDto}) => TransactionApi.releaseMilestonePayment(milestoneId, data),
-        onSuccess: () => {
-            toast.success('Milestone payment released successfully');
             queryClient.invalidateQueries({ queryKey: ['transactions'] })
         },
         onError: (error) => {

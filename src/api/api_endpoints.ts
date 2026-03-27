@@ -63,7 +63,6 @@ const API_ENDPOINTS = {
         getTransactions: '/api/v1/transactions',
         getTransactionById: '/api/v1/transactions/:id',
         confirmMilestoneCompleted: '/api/v1/transactions/milestone/:milestoneId/confirm',
-        releaseMilestonePayment: '/api/v1/transactions/milestone/:milestoneId/release',
         escrowAndPayment: '/api/v1/transactions/escrow',
         escrowPaymentStats: '/api/v1/transactions/escrow/stats'
     },
@@ -75,6 +74,17 @@ const API_ENDPOINTS = {
         addBankingMethod: '/api/v1/wallet/banking-methods',
         removeBankingMethod: '/api/v1/wallet/banking-methods/:id',
         setDefaultBankingMethod: '/api/v1/wallet/banking-methods/:id/set-default',
+    },
+    milestones: {
+        startMileStone: '/api/v1/milestones/:projectId/:milestoneId/start',
+        requestPayment: '/api/v1/milestones/:projectId/:milestoneId/request-payment',
+        releasePayment: '/api/v1/milestones/:projectId/:milestoneId/release-payment',
+    },
+    disputes: {
+        getProjectDisputes: '/api/v1/disputes/:projectId',
+        resolveDispute: '/api/v1/disputes/:disputeId/resolve',
+        raiseDisputeForMilestone: '/api/v1/disputes/:projectId/milestones/:milestoneId',
+        respondToDispute: '/api/v1/disputes/:disputeId/respond',
     }
 };
 

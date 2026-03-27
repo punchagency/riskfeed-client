@@ -3,27 +3,47 @@ import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { FileText, Lock, CheckCircle2, AlertCircle } from 'lucide-react'
+import { FileText, Lock, CheckCircle2, AlertCircle, Loader2, History } from 'lucide-react'
 import { formatCurrency } from '@/utils/format-currency-price'
 import type { IContractor } from '@/interfaces/user/user.interface'
 import { cn } from '@/lib/utils'
 import { getStatusColor } from '@/constants/status-styles'
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { ApproveReleasePaymentDialog } from './approve-release-payment-dialog'
+import CreateMilestoneDispute from './create-milestone-dispute'
+import { useNavigate } from 'react-router-dom'
 
 interface EscrowPaymentCardProps {
     data: IEscrowPayment
     role?: 'user' | 'contractor'
-    onApproveRelease?: (milestoneId: string) => void
-    onDispute?: (milestoneId: string) => void
-    onStartMilestone?: (milestoneId: string) => void
-    onRequestPayment?: (milestoneId: string) => void
+    onApproveRelease?: (milestoneId: string, data: { releaseAmount: number; notes?: string }) => void
+    onDisputeCreated?: () => void
+    onResolveDispute?: (milestoneId: string, projectId: string) => void
+    onViewDisputeHistory?: (projectId: string) => void
+    onStartMilestone?: (milestoneId: string, projectId: string) => void
+    onRequestPayment?: (milestoneId: string, projectId: string) => void
+    isLoading?: boolean
+    loadingMilestoneId?: string
 }
 
-const formatDate = (date: Date | string | undefined) => {
+const formatDateTime = (date: Date | string | undefined) => {
     if (!date) return '—';
     return new Date(date).toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
         year: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
     });
 };
 
@@ -31,15 +51,56 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
     data,
     role = 'user',
     onApproveRelease,
-    onDispute,
+    onDisputeCreated,
+    onResolveDispute,
+    onViewDisputeHistory,
     onStartMilestone,
-    onRequestPayment
+    onRequestPayment,
+    isLoading,
+    loadingMilestoneId
 }) => {
-    // Attempt to extract string or object contractor details
+    const navigate = useNavigate();
     const contractorObj = data.project?.selectedContractor as Partial<IContractor>;
     const contractorName = contractorObj?.companyName ? contractorObj.companyName : (typeof contractorObj === 'string' ? contractorObj : 'Unknown Contractor');
 
     const sortedMilestones = [...(data.milestones || [])].sort((a, b) => a.sequence - b.sequence);
+
+    const ConfirmDialog = ({
+        trigger,
+        title,
+        description,
+        onConfirm,
+        variant = "default"
+    }: {
+        trigger: React.ReactNode,
+        title: string,
+        description: string,
+        onConfirm: () => void,
+        variant?: "default" | "destructive"
+    }) => (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                {trigger}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>{title}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        {description}
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel className="h-10">Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                        onClick={onConfirm}
+                        className={cn(variant === "destructive" ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : "", "h-10")}
+                    >
+                        Confirm
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
 
     return (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700">
@@ -52,9 +113,22 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
                             Contractor: <span className='text-secondary-foreground font-medium'>{contractorName}</span>
                         </p>
                     </div>
-                    <Badge variant="secondary" className={cn("border-0 pointer-events-none rounded-md px-3 font-medium", getStatusColor(data.project?.status))}>
-                        {data.project?.status?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Unknown'}
-                    </Badge>
+                    <div className="flex flex-col items-end gap-2">
+                        <Badge variant="secondary" className={cn("border-0 pointer-events-none rounded-md px-3 font-medium", getStatusColor(data.project?.status))}>
+                            {data.project?.status?.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) || 'Unknown'}
+                        </Badge>
+                        {data.project?.hasDispute && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10 gap-1 border-destructive border"
+                                onClick={() => onViewDisputeHistory?.(data.project?._id || '')}
+                            >
+                                <History className="w-3 h-3" />
+                                View Dispute History
+                            </Button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Escrow Summary Section */}
@@ -143,6 +217,7 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
                         const authorizedTx = mTransactions.find(t => t.type === 'milestone_release' && t.status === 'authorized');
 
                         const currentStatus = milestone.status;
+                        const isMilestoneLoading = isLoading && loadingMilestoneId === milestone._id;
 
                         // Function to render right-hand-side actions specific to role
                         const renderActionsAndStatus = () => {
@@ -155,8 +230,8 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
                                             <span>Completed & Released</span>
                                         </div>
                                         <div className="text-[11px] text-muted-foreground text-right space-y-0.5 mt-1">
-                                            {authorizedTx && <p>Requested: {formatDate(authorizedTx.createdAt)}</p>}
-                                            {releasedTx && <p>Released: {formatDate(releasedTx.createdAt)}</p>}
+                                            {authorizedTx && <p>Requested: {formatDateTime(authorizedTx.createdAt)}</p>}
+                                            {releasedTx && <p>Released: {formatDateTime(releasedTx.createdAt)}</p>}
                                         </div>
                                     </>
                                 );
@@ -164,16 +239,44 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
 
                             if (currentStatus === 'dispute') {
                                 return (
-                                    <div className="flex items-center gap-1.5 text-red-500 font-medium text-xs mb-1 justify-end">
-                                        <AlertCircle className="w-4 h-4" />
-                                        <span>In Dispute</span>
-                                    </div>
+                                    <>
+                                        <div className="flex items-center gap-1.5 text-red-500 font-medium text-xs mb-1 justify-end">
+                                            <AlertCircle className="w-4 h-4" />
+                                            <span>In Dispute</span>
+                                        </div>
+                                        <div className="flex items-center justify-end gap-2">
+                                            {role === 'user' && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 text-xs text-destructive hover:bg-red-50 hover:text-destructive border-border"
+                                                    disabled={isMilestoneLoading}
+                                                    onClick={() => onResolveDispute?.(milestone._id, data.project?._id || '')}
+                                                >
+                                                    {isMilestoneLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                    Resolve Dispute
+                                                </Button>
+                                            )}
+                                            {role === 'contractor' && (
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="h-8 text-xs border-border"
+                                                    disabled={isMilestoneLoading}
+                                                    onClick={() => navigate(`/escrow-payments/${data.project?._id}/disputes`)}
+                                                >
+                                                    {isMilestoneLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                    View Dispute
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </>
                                 );
                             }
 
-                            if (currentStatus === 'dispute_resolved') {
+                            if (currentStatus === 'dispute_resolved' && role === 'contractor') {
                                 return (
-                                    <Badge variant="secondary" className="bg-blue-50 text-blue-600 font-medium text-xs px-2.5 border-blue-200">
+                                    <Badge variant="secondary" className="bg-blue-50 dark:bg-blue-50/20 text-blue-600 font-medium text-xs px-2.5 border-blue-200 dark:border-blue-50/20">
                                         Dispute Resolved
                                     </Badge>
                                 );
@@ -196,26 +299,41 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
                                     const canStart = isFirst || (prevMilestone && (prevMilestone.status === 'completed' || prevMilestone.status === 'payment_released'));
 
                                     return (
-                                        <Button
-                                            size="sm"
-                                            className="h-8 text-xs bg-indigo-900 hover:bg-indigo-800 text-white shadow-sm"
-                                            disabled={!canStart}
-                                            onClick={() => onStartMilestone?.(milestone._id)}
-                                        >
-                                            Start Milestone
-                                        </Button>
+                                        <ConfirmDialog
+                                            title="Start Milestone"
+                                            description="Are you sure you want to start this milestone? This will notify the homeowner."
+                                            onConfirm={() => onStartMilestone?.(milestone._id, data.project?._id || '')}
+                                            trigger={
+                                                <Button
+                                                    size="sm"
+                                                    className="h-8 text-xs bg-indigo-900 hover:bg-indigo-800 text-white shadow-sm"
+                                                    disabled={!canStart || isMilestoneLoading}
+                                                >
+                                                    {isMilestoneLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                    Start Milestone
+                                                </Button>
+                                            }
+                                        />
                                     );
                                 }
 
                                 if (currentStatus === 'in_progress') {
                                     return (
-                                        <Button
-                                            size="sm"
-                                            className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50"
-                                            onClick={() => onRequestPayment?.(milestone._id)}
-                                        >
-                                            Request Payment
-                                        </Button>
+                                        <ConfirmDialog
+                                            title="Request Payment"
+                                            description="Are you sure you want to request payment for this milestone? Ensure all work for this milestone is completed."
+                                            onConfirm={() => onRequestPayment?.(milestone._id, data.project?._id || '')}
+                                            trigger={
+                                                <Button
+                                                    size="sm"
+                                                    className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-sm disabled:opacity-50"
+                                                    disabled={isMilestoneLoading}
+                                                >
+                                                    {isMilestoneLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                    Request Payment
+                                                </Button>
+                                            }
+                                        />
                                     );
                                 }
 
@@ -239,14 +357,22 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
 
                                 if (currentStatus === 'in_progress') {
                                     return (
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            className="h-8 text-xs text-destructive hover:bg-red-50 hover:text-destructive border-border"
-                                            onClick={() => onDispute?.(milestone._id)}
-                                        >
-                                            Dispute
-                                        </Button>
+                                        <CreateMilestoneDispute
+                                            project={data.project}
+                                            milestone={milestone}
+                                            onDisputeCreated={onDisputeCreated}
+                                            trigger={
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-8 text-xs text-destructive hover:bg-red-50 hover:text-destructive border-border"
+                                                    disabled={isMilestoneLoading}
+                                                >
+                                                    {isMilestoneLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                    Dispute
+                                                </Button>
+                                            }
+                                        />
                                     );
                                 }
 
@@ -258,21 +384,85 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
                                                 <span>Pending Your Approval</span>
                                             </div>
                                             <div className="flex items-center justify-end gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="h-8 text-xs text-destructive hover:bg-red-50 hover:text-destructive border-border"
-                                                    onClick={() => onDispute?.(milestone._id)}
-                                                >
-                                                    Dispute
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    className="h-8 text-xs bg-indigo-900 hover:bg-indigo-800 text-white"
-                                                    onClick={() => onApproveRelease?.(milestone._id)}
-                                                >
-                                                    Approve & Release
-                                                </Button>
+                                                <CreateMilestoneDispute
+                                                    project={data.project}
+                                                    milestone={milestone}
+                                                    onDisputeCreated={onDisputeCreated}
+                                                    trigger={
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-8 text-xs text-destructive hover:bg-red-50 hover:text-destructive border-border"
+                                                            disabled={isMilestoneLoading}
+                                                        >
+                                                            {isMilestoneLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                            Dispute
+                                                        </Button>
+                                                    }
+                                                />
+                                                <ApproveReleasePaymentDialog
+                                                    milestone={milestone}
+                                                    contractor={data.project?.selectedContractor}
+                                                    projectTitle={data.project?.title}
+                                                    onConfirm={(releaseData) => onApproveRelease?.(milestone._id, releaseData)}
+                                                    isLoading={isMilestoneLoading}
+                                                    trigger={
+                                                        <Button
+                                                            size="sm"
+                                                            className="h-8 text-xs bg-indigo-900 hover:bg-indigo-800 text-white"
+                                                            disabled={isMilestoneLoading}
+                                                        >
+                                                            {isMilestoneLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                            Approve & Release
+                                                        </Button>
+                                                    }
+                                                />
+                                            </div>
+                                        </>
+                                    );
+                                }
+
+                                if (currentStatus === 'dispute_resolved') {
+                                    return (
+                                        <>
+                                            <div className="flex items-center gap-1.5 text-orange-500 font-medium text-xs mb-2 justify-end">
+                                                <AlertCircle className="w-4 h-4" />
+                                                <span>Pending Your Approval (Dispute Resolved)</span>
+                                            </div>
+                                            <div className="flex items-center justify-end gap-2">
+                                                {/* <CreateMilestoneDispute
+                                                    project={data.project}
+                                                    milestone={milestone}
+                                                    onDisputeCreated={onDisputeCreated}
+                                                    trigger={
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-8 text-xs text-destructive hover:bg-red-50 hover:text-destructive border-border"
+                                                            disabled={isMilestoneLoading}
+                                                        >
+                                                            {isMilestoneLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                            Dispute
+                                                        </Button>
+                                                    }
+                                                /> */}
+                                                <ApproveReleasePaymentDialog
+                                                    milestone={milestone}
+                                                    contractor={data.project?.selectedContractor}
+                                                    projectTitle={data.project?.title}
+                                                    onConfirm={(releaseData) => onApproveRelease?.(milestone._id, releaseData)}
+                                                    isLoading={isMilestoneLoading}
+                                                    trigger={
+                                                        <Button
+                                                            size="sm"
+                                                            className="h-8 text-xs text-white"
+                                                            disabled={isMilestoneLoading}
+                                                        >
+                                                            {isMilestoneLoading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                                                            Approve & Release
+                                                        </Button>
+                                                    }
+                                                />
                                             </div>
                                         </>
                                     );
@@ -293,14 +483,17 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
                                         <div className="space-y-1.5 w-full">
                                             <h4 className="font-semibold text-foreground text-sm">{milestone.name}</h4>
                                             {milestone.description && <p className="text-sm text-muted-foreground">{milestone.description}</p>}
-                                            <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1">
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground pt-1">
                                                 <span className="font-medium text-foreground">
                                                     {formatCurrency(milestone.amount || 0, 'USD')} <span className="text-muted-foreground font-normal">({milestone.percentage}% of total)</span>
                                                 </span>
+                                                {milestone.startedAt && <span>Started: <span className="text-foreground font-medium">{formatDateTime(milestone.startedAt)}</span></span>}
+                                                {milestone.paymentRequestedAt && <span>Requested: <span className="text-foreground font-medium">{formatDateTime(milestone.paymentRequestedAt)}</span></span>}
+                                                {milestone.completedAt && <span>Completed: <span className="text-foreground font-medium">{formatDateTime(milestone.completedAt)}</span></span>}
                                                 {fundedTx && (
                                                     <div className="flex items-center gap-1">
                                                         <Lock className="w-3.5 h-3.5" />
-                                                        <span>Funded {formatDate(fundedTx.createdAt)}</span>
+                                                        <span>Funded <span className="text-foreground font-medium">{formatDateTime(fundedTx.createdAt)}</span></span>
                                                     </div>
                                                 )}
                                             </div>
@@ -320,4 +513,3 @@ export const EscrowPaymentCard: React.FC<EscrowPaymentCardProps> = ({
         </div>
     )
 }
-
